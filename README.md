@@ -9,8 +9,9 @@ This repository contains necesarry hardware libraries and system utilities for t
 
 The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroller, an ADXL372 accelerometer, and a MX25R6435FM2IL0 QSPI flash memory chip.  In terms of connectivity, the device features a 20 position single row header for the front-end inputs, an STDC14 header for debugging, and a Micro-USB Type B port for external digital interfacing.  The device is powered by three CR2032 coin cells, which constitute the bipolar analog supply rails and the digital supply rail.  Estimates forecast that the device consumes roughly 11mA while in full acquisition mode, and consumes only 3uA while in deep sleep.
 
-<front render> <back render>
-  
+<p align="center">
+  <img width="294" height="383" src="https://raw.githubusercontent.com/tarasjg/ACE_SDK/main/Wiki%20Photos/Render_Front.PNG">
+</p>
   
   ## Hardware Libraries
   
