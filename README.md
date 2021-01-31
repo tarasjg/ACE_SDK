@@ -35,4 +35,84 @@ The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroll
  metrics.c - provides several anaylsis tools for quantifying recorded data
  
  selftest.c - queries device IDs and reports status via both USART and USB
-  
+ 
+ 
+ 
+ # STM32 Pin Map
+ 
+ ## External Comms
+ 
+ ### USB
+ USB_DP - GPIOA; GPIO_PIN_12
+ 
+ USB_DM - GPIOA; GPIO_PIN_11
+ 
+ ### USART VCP
+ USART_RX - GPIOA; GPIO_PIN_10
+ 
+ USART_TX - GPIOA; GPIO_PIN_9
+ 
+ ### JTAG
+ JTDO - GPIOB; GPIO_PIN_3
+ 
+ JTDI - GPIOA; GPIO_PIN_15
+ 
+ TCK  - GPIOA; GPIO_PIN_14
+ 
+ TMS  - GPIOA; GPIO_PIN_13
+ 
+ ## Periph Comms
+ 
+ ### AFE
+ SCK - GPIOC; GPIO_PIN_10
+ 
+ MOSI - GPIOB; GPIO_PIN_5
+ 
+ MISO - GPIOB; GPIO_PIN_4
+ 
+ CS - GPIOB; GPIO_PIN_6
+ 
+ DRDY - GPIOB; GPIO_PIN_7
+ 
+ PWDN - GPIOC; GPIO_PIN_12
+ 
+ START - GPIOB; GPIO_PIN_8
+ 
+ RST - GPIOB; GPIO_PIN_9
+ 
+ ### ACCEL
+ SCK - GPIOA; GPIO_PIN_1
+ 
+ MOSI - GPIOA; GPIO_PIN_7
+ 
+ MISO - GPIOA; GPIO_PIN_6
+ 
+ CS - GPIOC; GPIO_PIN_4
+ 
+ INT - GPIOA; GPIO_PIN_0
+ 
+ ### MEM
+ CLK - GPIOB; GPIO_PIN_10
+ 
+ QSPI_IO0 - GPIOB; GPIO_PIN_1
+ 
+ QSPI_IO1 - GPIOB; GPIO_PIN_0
+ 
+ QSPI_IO2 - GPIOA; GPIO_PIN_7
+ 
+ QSPI_IO3 - GPIOA; GPIO_PIN_6
+ 
+ CS - GPIOB; GPIO_PIN_11
+ 
+ ## SYS; Reserved
+ LSE_IN - GPIOC; GPIO_PIN_14
+ LSE_OUT - GPIOC; GPIO_PIN_15
+ 
+ RST - RST
+ 
+ BOOT0 - GPIOH; GPIO_PIN_3
+ 
+ ## LED
+ LED0 - GPIOB; GPIO_PIN_14
+ LED1 - GPIOB; GPIO_PIN_13
+ 
