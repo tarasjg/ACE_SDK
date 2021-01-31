@@ -33,4 +33,6 @@ The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroll
  filters.c - provides useful DSP filters for preprocessing
  
  metrics.c - provides several anaylsis tools for quantifying recorded data
+ 
+ selftest.c - queries device IDs and reports status via both USART and USB
   
