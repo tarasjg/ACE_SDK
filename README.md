@@ -76,6 +76,8 @@ The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroll
  
  PWDN - GPIOC; GPIO_PIN_12
  
+ APWR_EN - GPIOD; GPIO_PIN_2
+ 
  START - GPIOB; GPIO_PIN_8
  
  RST - GPIOB; GPIO_PIN_9
