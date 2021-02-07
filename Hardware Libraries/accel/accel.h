@@ -76,7 +76,21 @@
 #define ADXL372_RESET_CODE			0x52u	/* Writing code 0x52 resets the device */
 
 
+typedef struct gpio_pins {
+	GPIO_TypeDef* port;
+	uint16_t pin;
+} GPIO_Pin;
+
+typedef struct spi_comms {
+	SPI_HandleTypeDef* handle;
+	GPIO_Pin* cs;
+} SPI_Comm;
 
 
+
+uint8_t reg_read(SPI_Comm, uint8_t);
+void reg_write(SPI_Comm, uint8_t, uint8_t);
+
+//void reg_read
 
 #endif /* INC_ACCEL_H_ */
