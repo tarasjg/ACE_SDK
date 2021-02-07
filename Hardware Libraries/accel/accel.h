@@ -91,6 +91,4 @@ typedef struct spi_comms {
 uint8_t reg_read(SPI_Comm, uint8_t);
 void reg_write(SPI_Comm, uint8_t, uint8_t);
 
-//void reg_read
-
 #endif /* INC_ACCEL_H_ */

@@ -44,5 +44,3 @@ void reg_write(SPI_Comm spi, uint8_t addr, uint8_t payload)
 	HAL_SPI_Transmit(spi.handle, (uint8_t *)&tx, sizeof(tx), HAL_MAX_DELAY);
 	HAL_GPIO_TogglePin(spi.cs->port, spi.cs->pin);
 }
-
-//dat_boi.bitch = 5;
