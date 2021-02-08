@@ -8,7 +8,7 @@
 
 #include "accel.h"
 
-extern hspi2;
+extern SPI_HandleTypeDef hspi2;
 
 GPIO_Pin chip_select = {
 		.port = GPIOB,
