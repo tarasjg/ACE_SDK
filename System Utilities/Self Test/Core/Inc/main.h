@@ -58,6 +58,22 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ADXL_CS_Pin GPIO_PIN_4
+#define ADXL_CS_GPIO_Port GPIOC
+#define LED2_Pin GPIO_PIN_13
+#define LED2_GPIO_Port GPIOB
+#define LED1_Pin GPIO_PIN_14
+#define LED1_GPIO_Port GPIOB
+#define SPI3_CS_Pin GPIO_PIN_6
+#define SPI3_CS_GPIO_Port GPIOB
+#define ADS_DRDY_Pin GPIO_PIN_7
+#define ADS_DRDY_GPIO_Port GPIOB
+#define BOOT0_Pin GPIO_PIN_3
+#define BOOT0_GPIO_Port GPIOH
+#define ADS_START_Pin GPIO_PIN_8
+#define ADS_START_GPIO_Port GPIOB
+#define ADS_RST_Pin GPIO_PIN_9
+#define ADS_RST_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
