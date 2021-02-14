@@ -24,6 +24,30 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+//registers and expected responses
+
+//accel
+//out
+#define AD_R 0x00
+#define PRODUCT_R 0x03
+//in
+#define DEVID_AD 0xAD
+#define DEVID_PRODUCT 0xFA //372 Octal
+
+//afe
+//out
+#define CONFIG1_R 0x01
+//in
+#define ADS_CONFIG1 0x96
+
+//mem
+//out
+#define RDID_R 0x9F
+//in (3 byte sequential response)
+#define MFG_ID 0xC2
+#define MEM_T 0x28
+#define MEM_D 0x17
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
