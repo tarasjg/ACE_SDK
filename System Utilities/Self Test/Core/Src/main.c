@@ -85,6 +85,9 @@ static void MX_USART1_UART_Init(void);
 static void MX_QUADSPI_Init(void);
 static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
+static uint8_t query(void);
+
+static void report(uint8_t);
 
 /* USER CODE END PFP */
 
@@ -135,7 +138,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  report(query());
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -426,6 +429,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static uint8_t query(void) {
+	return 0;
+}
+
+static void report(uint8_t test_reg) {
+
+}
 
 /* USER CODE END 4 */
 
