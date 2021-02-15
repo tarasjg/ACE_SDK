@@ -430,7 +430,20 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 static uint8_t query(void) {
-	return 0;
+	union {
+		uint8_t report;
+		struct {
+			uint8_t d_care : 4;
+			uint8_t accel_pass : 1;
+			uint8_t afe_pass : 1;
+			uint8_t mem_pass : 1;
+			uint8_t apwr_pass : 1;
+		} bits;
+	} report_bit_field;
+
+	report_bit_field.report = 0x00;
+
+	return report_bit_field.report;
 }
 
 static void report(uint8_t test_reg) {
