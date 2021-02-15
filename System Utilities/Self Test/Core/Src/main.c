@@ -487,7 +487,11 @@ static uint8_t query(void) {
 }
 
 static void report(uint8_t test_reg) {
+	//send uart
 
+	//send USB
+
+	//blink pattern
 }
 
 /* USER CODE END 4 */
