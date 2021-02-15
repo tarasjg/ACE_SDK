@@ -129,8 +129,35 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_QUADSPI_Init();
   MX_SPI2_Init();
-  /* USER CODE BEGIN 2 */
 
+
+  /* USER CODE BEGIN 2 */
+  //start up LED sequence
+  GPIOB->ODR |= (LED1_Pin | LED2_Pin); //mask on both LEDs at once
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED1_Pin | LED2_Pin); //mask off both LEDs at once
+  HAL_Delay(250);
+  GPIOB->ODR |= (LED1_Pin | LED2_Pin); //mask on both LEDs at once
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED1_Pin | LED2_Pin); //mask off both LEDs at once
+  HAL_Delay(250);
+
+
+  char test_phrase[] = "Testing...";
+  HAL_UART_Transmit(&huart1, (uint8_t *) &test_phrase, sizeof test_phrase, HAL_MAX_DELAY);
+
+  uint8_t test = query();
+
+
+  GPIOB->ODR |= (LED1_Pin); //mask LED1
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED1_Pin | LED2_Pin); //swap to LED2
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED1_Pin | LED2_Pin); //back to LED1
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED1_Pin | LED2_Pin); //back to LED2
+  HAL_Delay(250);
+  GPIOB->ODR ^= (LED2_Pin); //end sequence
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -138,7 +165,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  report(query());
+	  report(test);
+	  HAL_Delay(250);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -442,6 +470,18 @@ static uint8_t query(void) {
 	} report_bit_field;
 
 	report_bit_field.report = 0x00;
+
+	//query ADXL372
+
+
+
+	//query ADS1299
+
+
+
+	//query MX25R64
+
+
 
 	return report_bit_field.report;
 }
