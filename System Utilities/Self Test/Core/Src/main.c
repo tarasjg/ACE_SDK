@@ -129,8 +129,6 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_QUADSPI_Init();
   MX_SPI2_Init();
-
-
   /* USER CODE BEGIN 2 */
   //start up LED sequence
   GPIOB->ODR |= (LED1_Pin | LED2_Pin); //mask on both LEDs at once
@@ -165,9 +163,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
 	  report(test);
 	  HAL_Delay(250);
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -410,11 +409,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, ADXL_CS_Pin|ADS_PWDN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ADXL_CS_GPIO_Port, ADXL_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LED2_Pin|LED1_Pin|SPI3_CS_Pin|ADS_START_Pin
                           |ADS_RST_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(ADS_PWDN_GPIO_Port, ADS_PWDN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(APWR_EN_GPIO_Port, APWR_EN_Pin, GPIO_PIN_RESET);
@@ -473,7 +475,15 @@ static uint8_t query(void) {
 
 	//query ADXL372
 
+	uint8_t ad_tx = (PRODUCT_R << 1) | 0x01;
+	uint8_t ad_token;
 
+	HAL_GPIO_TogglePin(ADXL_CS_GPIO_Port, ADXL_CS_Pin);
+	HAL_SPI_Transmit(&hspi2, &ad_tx, 1, HAL_MAX_DELAY);
+	HAL_SPI_Receive(&hspi2, &ad_token, 1, HAL_MAX_DELAY);
+	HAL_GPIO_TogglePin(ADXL_CS_GPIO_Port, ADXL_CS_Pin);
+
+	report_bit_field.bits.accel_pass = (DEVID_PRODUCT == ad_token);
 
 	//query ADS1299
 
