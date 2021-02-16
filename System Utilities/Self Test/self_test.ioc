@@ -1,5 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
 File.Version=6
+GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false
 Mcu.Family=STM32L4
 Mcu.IP0=NVIC
@@ -115,9 +116,10 @@ PB4\ (NJTRST).Signal=SPI3_MISO
 PB5.Locked=true
 PB5.Mode=Full_Duplex_Master
 PB5.Signal=SPI3_MOSI
-PB6.GPIOParameters=GPIO_Label
-PB6.GPIO_Label=SPI3_CS
+PB6.GPIOParameters=PinState,GPIO_Label
+PB6.GPIO_Label=AFE_CS
 PB6.Locked=true
+PB6.PinState=GPIO_PIN_SET
 PB6.Signal=GPIO_Output
 PB7.GPIOParameters=GPIO_Label
 PB7.GPIO_Label=ADS_DRDY

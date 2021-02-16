@@ -412,14 +412,16 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ADXL_CS_GPIO_Port, ADXL_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LED2_Pin|LED1_Pin|SPI3_CS_Pin|ADS_START_Pin
-                          |ADS_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LED2_Pin|LED1_Pin|ADS_START_Pin|ADS_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ADS_PWDN_GPIO_Port, ADS_PWDN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(APWR_EN_GPIO_Port, APWR_EN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(AFE_CS_GPIO_Port, AFE_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : ADXL_CS_Pin ADS_PWDN_Pin */
   GPIO_InitStruct.Pin = ADXL_CS_Pin|ADS_PWDN_Pin;
@@ -428,9 +430,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED2_Pin LED1_Pin SPI3_CS_Pin ADS_START_Pin
+  /*Configure GPIO pins : LED2_Pin LED1_Pin AFE_CS_Pin ADS_START_Pin
                            ADS_RST_Pin */
-  GPIO_InitStruct.Pin = LED2_Pin|LED1_Pin|SPI3_CS_Pin|ADS_START_Pin
+  GPIO_InitStruct.Pin = LED2_Pin|LED1_Pin|AFE_CS_Pin|ADS_START_Pin
                           |ADS_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -487,7 +489,15 @@ static uint8_t query(void) {
 
 	//query ADS1299
 
+	uint8_t af_tx[] = {0b00100001, 0b00000001}; //read reg 0x00 of 1 byte length
+	uint8_t af_rx;
 
+	HAL_GPIO_TogglePin(AFE_CS_GPIO_Port, AFE_CS_Pin);
+	HAL_SPI_Transmit(&hspi3, (uint8_t *)&af_tx, sizeof af_tx, HAL_MAX_DELAY);
+	HAL_SPI_Receive(&hspi3, &af_rx, 1, HAL_MAX_DELAY);
+	HAL_GPIO_TogglePin(AFE_CS_GPIO_Port, AFE_CS_Pin);
+
+	report_bit_field.bits.afe_pass = (0x96 == af_rx);
 
 	//query MX25R64
 

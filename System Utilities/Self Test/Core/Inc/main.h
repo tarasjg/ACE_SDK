@@ -68,8 +68,8 @@ void Error_Handler(void);
 #define ADS_PWDN_GPIO_Port GPIOC
 #define APWR_EN_Pin GPIO_PIN_2
 #define APWR_EN_GPIO_Port GPIOD
-#define SPI3_CS_Pin GPIO_PIN_6
-#define SPI3_CS_GPIO_Port GPIOB
+#define AFE_CS_Pin GPIO_PIN_6
+#define AFE_CS_GPIO_Port GPIOB
 #define ADS_DRDY_Pin GPIO_PIN_7
 #define ADS_DRDY_GPIO_Port GPIOB
 #define BOOT0_Pin GPIO_PIN_3
