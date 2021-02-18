@@ -489,7 +489,7 @@ static uint8_t query(void) {
 
 	//query ADS1299
 
-	uint8_t af_tx[] = {0b00100001, 0b00000001}; //read reg 0x00 of 1 byte length
+	uint8_t af_tx[] = {0b00100001, 0b00000001}; //read reg 0x01 of 1 byte length
 	uint8_t af_rx;
 
 	HAL_GPIO_TogglePin(AFE_CS_GPIO_Port, AFE_CS_Pin);
