@@ -36,6 +36,10 @@ The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroll
  
  selftest.c - queries device IDs and reports status via both USART and USB
  
+ ## External Applications
+ 
+ presenter.py - establishes connection with the ACE Mini EEG, reads the memory dump, and outputs a .csv
+ 
  
  
  # STM32 Pin Map
