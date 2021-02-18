@@ -800,9 +800,9 @@ static void MX_SPI2_Init(void)
  800076e:	4b18      	ldr	r3, [pc, #96]	; (80007d0 <MX_SPI2_Init+0x74>)
  8000770:	2200      	movs	r2, #0
  8000772:	609a      	str	r2, [r3, #8]
-  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
  8000774:	4b16      	ldr	r3, [pc, #88]	; (80007d0 <MX_SPI2_Init+0x74>)
- 8000776:	f44f 7240 	mov.w	r2, #768	; 0x300
+ 8000776:	f44f 62e0 	mov.w	r2, #1792	; 0x700
  800077a:	60da      	str	r2, [r3, #12]
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
  800077c:	4b14      	ldr	r3, [pc, #80]	; (80007d0 <MX_SPI2_Init+0x74>)
@@ -816,9 +816,9 @@ static void MX_SPI2_Init(void)
  8000788:	4b11      	ldr	r3, [pc, #68]	; (80007d0 <MX_SPI2_Init+0x74>)
  800078a:	f44f 7200 	mov.w	r2, #512	; 0x200
  800078e:	619a      	str	r2, [r3, #24]
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
  8000790:	4b0f      	ldr	r3, [pc, #60]	; (80007d0 <MX_SPI2_Init+0x74>)
- 8000792:	2200      	movs	r2, #0
+ 8000792:	2228      	movs	r2, #40	; 0x28
  8000794:	61da      	str	r2, [r3, #28]
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
  8000796:	4b0e      	ldr	r3, [pc, #56]	; (80007d0 <MX_SPI2_Init+0x74>)
@@ -891,9 +891,9 @@ static void MX_SPI3_Init(void)
  80007ea:	4b18      	ldr	r3, [pc, #96]	; (800084c <MX_SPI3_Init+0x74>)
  80007ec:	2200      	movs	r2, #0
  80007ee:	609a      	str	r2, [r3, #8]
-  hspi3.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
  80007f0:	4b16      	ldr	r3, [pc, #88]	; (800084c <MX_SPI3_Init+0x74>)
- 80007f2:	f44f 7240 	mov.w	r2, #768	; 0x300
+ 80007f2:	f44f 62e0 	mov.w	r2, #1792	; 0x700
  80007f6:	60da      	str	r2, [r3, #12]
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
  80007f8:	4b14      	ldr	r3, [pc, #80]	; (800084c <MX_SPI3_Init+0x74>)
@@ -907,9 +907,9 @@ static void MX_SPI3_Init(void)
  8000804:	4b11      	ldr	r3, [pc, #68]	; (800084c <MX_SPI3_Init+0x74>)
  8000806:	f44f 7200 	mov.w	r2, #512	; 0x200
  800080a:	619a      	str	r2, [r3, #24]
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
  800080c:	4b0f      	ldr	r3, [pc, #60]	; (800084c <MX_SPI3_Init+0x74>)
- 800080e:	2200      	movs	r2, #0
+ 800080e:	2210      	movs	r2, #16
  8000810:	61da      	str	r2, [r3, #28]
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
  8000812:	4b0e      	ldr	r3, [pc, #56]	; (800084c <MX_SPI3_Init+0x74>)
@@ -1301,7 +1301,7 @@ static uint8_t query(void) {
 
 	//query ADS1299
 
-	uint8_t af_tx[] = {0b00100001, 0b00000001}; //read reg 0x00 of 1 byte length
+	uint8_t af_tx[] = {0b00100001, 0b00000001}; //read reg 0x01 of 1 byte length
  8000a6e:	4b16      	ldr	r3, [pc, #88]	; (8000ac8 <query+0xac>)
  8000a70:	881b      	ldrh	r3, [r3, #0]
  8000a72:	813b      	strh	r3, [r7, #8]
