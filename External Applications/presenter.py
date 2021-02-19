@@ -1,24 +1,21 @@
 import serial  # to establish com port
 import csv     # to r/w .csv
 import sys     # to parse argv
+from serial.tools import list_ports
 
+ports = list_ports.comports()
+dev_port = 0
+for port in ports:
+    if port.pid == 11111:
+        dev_port = port
 
-# on linux, we should run lsusb and find the port with the correct PID/VID
-# and then run this applet in terminal >python presenter.py -p /dev/ttyx
+if dev_port == 0:
+    print("Device not found, exiting...")
+    sys.exit(1)
 
-# format ['presenter.py', '-p', port]
-try:
-    if sys.argv[1] == '-p':
-        port = sys.argv[2]
-    else:
-        print('Invalid arguments: -p [port]')
-        sys.exit()
-except IndexError:
-    print('Invalid arguments: -p [port]')
-    sys.exit()
 
 # now that we have the port, lets open it
-ser = serial.Serial(port)
+ser = serial.Serial(dev_port)
 ser.write(0xAA)  # magic number that triggers a dump in firmware
 
 data = ser.read(8e+6)  # read 8 megabytes of data, we should not do this
