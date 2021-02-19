@@ -29,7 +29,7 @@ data = ser.read(8e+6)  # read 8 megabytes of data, we should not do this
 # now convert bytes to ints and write row-wise to an output csv
 data_int = []
 for byte in data:
-    data_int = int.from_bytes(byte, byteorder='big', signed=True)
+    data_int.append(int.from_bytes(byte, byteorder='big', signed=True))
 
 
 with open('dump.csv', 'w', newline='') as file:
