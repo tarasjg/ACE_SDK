@@ -13,7 +13,7 @@ try:
     else:
         print('Invalid arguments: -p [port]')
         sys.exit()
-except:
+except IndexError:
     print('Invalid arguments: -p [port]')
     sys.exit()
 
