@@ -7,9 +7,13 @@ import sys     # to parse argv
 # and then run this applet in terminal >python presenter.py -p /dev/ttyx
 
 # format ['presenter.py', '-p', port]
-if sys.argv[1] == '-p':
-    port = sys.argv[2]
-else:
+try:
+    if sys.argv[1] == '-p':
+        port = sys.argv[2]
+    else:
+        print('Invalid arguments: -p [port]')
+        sys.exit()
+except:
     print('Invalid arguments: -p [port]')
     sys.exit()
 
@@ -23,9 +27,11 @@ data = ser.read(8e+6)  # read 8 megabytes of data, we should not do this
 # but need to figure out how we will do it in firmware to fix this part
 
 # now convert bytes to ints and write row-wise to an output csv
+data_int = []
+for byte in data:
+    data_int = int.from_bytes(byte, byteorder='big', signed=True)
 
-data = int.from_bytes(data, byteorder='big', signed=True)
 
 with open('dump.csv', 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerows(data)
+    writer.writerows(data_int)
