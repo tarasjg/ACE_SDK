@@ -39,6 +39,7 @@ The ACE mini EEG features an ADS1299 analog front-end, a STM32L452 microcontroll
  ## External Applications
  
  capture.py - establishes connection with the ACE Mini EEG, reads the memory dump, and outputs a .csv
+ 
  presenter.py - reads a .csv data file and presents multi-channel graphing capabilities
  
  
