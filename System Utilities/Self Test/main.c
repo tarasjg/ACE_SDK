@@ -516,7 +516,7 @@ static uint8_t query(void) {
 
 	uint8_t rx_mem[3];
 
-	HAL_QSPI_Receive(&hqspi, &rx_mem, HAL_MAX_DELAY);
+	HAL_QSPI_Receive(&hqspi, rx_mem, HAL_MAX_DELAY);
 
 	report_bit_field.bits.mem_pass = (0xC2 == rx_mem[0] && 0x28 == rx_mem[1] && 0x17 == rx_mem[2]);
 
