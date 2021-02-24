@@ -501,6 +501,26 @@ static uint8_t query(void) {
 
 	//query MX25R64
 
+	QSPI_CommandTypeDef id_cmd;
+	id_cmd.InstructionMode = QSPI_INSTRUCTION_1_LINE; //single SPI mode
+	id_cmd.Instruction = 0x9F; //device ID instruction
+	id_cmd.AddressMode = QSPI_ADDRESS_NONE;
+	id_cmd.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	id_cmd.DataMode = QSPI_DATA_1_LINE;
+	id_cmd.NbData = 1;
+	id_cmd.DummyCycles = 0;
+	id_cmd.DdrMode = QSPI_DDR_MODE_DISABLE;
+	id_cmd.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+
+	HAL_QSPI_Command(&hqspi, &id_cmd, HAL_MAX_DELAY);
+
+	uint8_t rx_mem[3];
+
+	HAL_QSPI_Receive(&hqspi, &rx_mem, HAL_MAX_DELAY);
+
+	report_bit_field.bits.mem_pass = (0xC2 == rx_mem[0] && 0x28 == rx_mem[1] && 0x17 == rx_mem[2]);
+
+
 
 
 	return report_bit_field.report;
