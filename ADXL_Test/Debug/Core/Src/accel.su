@@ -1,0 +1,2 @@
+accel.c:16:6:reg_read	40	static
+accel.c:28:6:reg_write	40	static
