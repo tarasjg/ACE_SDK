@@ -12,7 +12,6 @@
 
 
 
-
 void reg_read(SPI_Comm spi, uint8_t addr, uint8_t* rx)
 {
 	uint8_t tx = (addr << 1) | 0x01;

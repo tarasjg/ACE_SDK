@@ -19,12 +19,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "accel.h"
-#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "accel.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +94,9 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+
+
+
   GPIO_Pin chip_select = {
   		.port = GPIOB,
   		.pin = GPIO_PIN_6
@@ -105,6 +106,7 @@ int main(void)
   		.handle = &hspi1,
   		.cs = &chip_select
   };
+  uint8_t fifo_buffer[512];
 
 
   uint8_t rxbuffer = 0;
@@ -114,25 +116,34 @@ int main(void)
   reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
   reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
 
-  HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  HAL_Delay(1000);
+  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
+  //HAL_Delay(100);
 
   // Set FIFO Mode
   payload = (uint8_t) 0x02; // 00000010 - stream
   reg_write(accel_spi, (uint8_t) ADXL372_FIFO_CTL, payload);
   reg_read(accel_spi, (uint8_t) ADXL372_FIFO_CTL, (uint8_t*) &rxbuffer);
 
-  HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  HAL_Delay(1000);
+  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
+  //HAL_Delay(100);
 
   // Set Full Bandwidth Mode with high threshold
   payload = (uint8_t) 0x23; // 00100011
   reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
   reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
 
-  HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  HAL_Delay(1000);
+  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
+  //HAL_Delay(100);
 
+  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_SAMPLES, (uint8_t*) &rxbuffer);
+
+
+  /*
+  		reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &tmp_buffer);
+  		uint8_t *fifo_buffer;
+  		fifo_buffer = (uint8_t *) malloc(*tmp_buffer);
+  		reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
+  */
 
 
   /* USER CODE END 2 */
@@ -144,18 +155,25 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  // Set Read the FIFO Register
-	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &rxbufferFIFO);
-	  enough = (rxbufferFIFO > 0) ? (int)(((ceil(log10(rxbufferFIFO))+1)*sizeof(char)) + 2) : 3;
-	  //char printstr[enough];
-	  char *printstr;
-	  printstr = (char *) malloc(enough);
-	  sprintf(printstr, "%d\r\n", rxbufferFIFO);
-	  HAL_UART_Transmit(&huart2, &printstr, sizeof(printstr), HAL_MAX_DELAY);
-	  free(printstr);
-	  HAL_Delay(100);
 
     /* USER CODE BEGIN 3 */
+	// Set Read the FIFO Register
+
+	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_1, (uint8_t*) &rxbufferFIFO);
+	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_2, (uint8_t*) &rxbufferFIFO);
+	  reg_read(accel_spi, (uint8_t) ADXL372_STATUS_1, (uint8_t*) &rxbufferFIFO);
+	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &rxbufferFIFO);
+	  //enough = (rxbufferFIFO > 0) ? (int)(((ceil(log10(rxbufferFIFO))+1)*sizeof(char)) + 2) : 3;
+	  //char printstr[enough];
+	  //char *printstr;
+	  //printstr = (char *) malloc(enough);
+	  //sprintf(printstr, "%d\r\n", rxbufferFIFO);
+	  //HAL_UART_Transmit(&huart2, &printstr, sizeof(printstr), HAL_MAX_DELAY);
+	  //free(printstr);
+
+	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
+
+	  HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }
@@ -237,7 +255,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -313,12 +331,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PB6 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
