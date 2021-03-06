@@ -1,0 +1,9 @@
+# DSP Testing files
+DSP_test/Debug/ 
+DSP_test/Drivers/       
+DSP_test/STM32L452RETX_FLASH.ld 
+DSP_test/STM32L452RETX_RAM.ld   
+DSP_test/DSP_test Debug.launch
+
+# Mac specific
+*.DS_store

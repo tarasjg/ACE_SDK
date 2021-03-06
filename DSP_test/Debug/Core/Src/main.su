@@ -1,6 +1,0 @@
-arm_math.h:5745:30:arm_sqrt_f32	16	static
-main.c:70:5:main	16	static
-main.c:118:6:SystemClock_Config	200	static
-main.c:173:13:MX_USART2_UART_Init	8	static
-main.c:208:13:MX_GPIO_Init	48	static
-main.c:244:6:Error_Handler	4	static,ignoring_inline_asm
