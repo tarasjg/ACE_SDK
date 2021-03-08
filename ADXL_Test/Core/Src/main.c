@@ -45,7 +45,7 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint8_t fifo_buffer[512];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,31 +106,31 @@ int main(void)
   		.handle = &hspi1,
   		.cs = &chip_select
   };
+
   uint8_t fifo_buffer[512];
 
-
-  uint8_t rxbuffer = 0;
+  //uint8_t rxbuffer = 0;
 
   // Set Stand By Mode
-  uint8_t payload = 0;
-  reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
-  reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
+  //uint8_t payload = 0;
+  //reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
+  //reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
 
   //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
   //HAL_Delay(100);
 
   // Set FIFO Mode
-  payload = (uint8_t) 0x02; // 00000010 - stream
-  reg_write(accel_spi, (uint8_t) ADXL372_FIFO_CTL, payload);
-  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_CTL, (uint8_t*) &rxbuffer);
+  //payload = (uint8_t) 0x02; // 00000010 - stream
+  //reg_write(accel_spi, (uint8_t) ADXL372_FIFO_CTL, payload);
+  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_CTL, (uint8_t*) &rxbuffer);
 
   //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
   //HAL_Delay(100);
 
   // Set Full Bandwidth Mode with high threshold
-  payload = (uint8_t) 0x23; // 00100011
-  reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
-  reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
+  //payload = (uint8_t) 0x23; // 00100011
+  //reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
+  //reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
 
   //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
   //HAL_Delay(100);
@@ -145,13 +145,13 @@ int main(void)
   		reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
   */
 
-
+  stream_start(accel_spi);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int rxbufferFIFO = 0;
-  int enough = 0;
+  //int rxbufferFIFO = 0;
+  //int enough = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -159,9 +159,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	// Set Read the FIFO Register
 
-	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_1, (uint8_t*) &rxbufferFIFO);
-	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_2, (uint8_t*) &rxbufferFIFO);
-	  reg_read(accel_spi, (uint8_t) ADXL372_STATUS_1, (uint8_t*) &rxbufferFIFO);
+	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_1, (uint8_t*) &rxbufferFIFO);
+	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_2, (uint8_t*) &rxbufferFIFO);
+	  //reg_read(accel_spi, (uint8_t) ADXL372_STATUS_1, (uint8_t*) &rxbufferFIFO);
 	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &rxbufferFIFO);
 	  //enough = (rxbufferFIFO > 0) ? (int)(((ceil(log10(rxbufferFIFO))+1)*sizeof(char)) + 2) : 3;
 	  //char printstr[enough];
@@ -172,6 +172,7 @@ int main(void)
 	  //free(printstr);
 
 	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
+	  //fifo_data(accel_spi, fifo_buffer);
 
 	  HAL_Delay(10);
   }

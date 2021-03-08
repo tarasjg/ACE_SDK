@@ -43,7 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern uint8_t fifo_buffer[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -207,9 +207,9 @@ void SysTick_Handler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-	if(__HAL_GPIO_EXTI_GET_FLAG(GPIO_PIN_7)) {
-		reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
-	}
+	//if(__HAL_GPIO_EXTI_GET_FLAG(GPIO_PIN_7)) {
+		fifo_data(accel_spi, fifo_buffer);
+	//}
 
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);

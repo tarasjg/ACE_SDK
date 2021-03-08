@@ -1,7 +1,7 @@
 Core/Src/accel.o: ../Core/Src/accel.c \
- C:/Users/jonny/STM32CubeIDE/workspace_1.5.1/ADXL_Test/Core/Inc/accel.h \
+ C:/Users/John\ Tarasidis/Documents/GitHub/ACE_SDK/ADXL_Test/Core/Inc/accel.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h \
- C:/Users/jonny/STM32CubeIDE/workspace_1.5.1/ADXL_Test/Core/Inc/stm32l4xx_hal_conf.h \
+ C:/Users/John\ Tarasidis/Documents/GitHub/ACE_SDK/ADXL_Test/Core/Inc/stm32l4xx_hal_conf.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h \
@@ -31,11 +31,11 @@ Core/Src/accel.o: ../Core/Src/accel.c \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
 
-C:/Users/jonny/STM32CubeIDE/workspace_1.5.1/ADXL_Test/Core/Inc/accel.h:
+C:/Users/John\ Tarasidis/Documents/GitHub/ACE_SDK/ADXL_Test/Core/Inc/accel.h:
 
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 
-C:/Users/jonny/STM32CubeIDE/workspace_1.5.1/ADXL_Test/Core/Inc/stm32l4xx_hal_conf.h:
+C:/Users/John\ Tarasidis/Documents/GitHub/ACE_SDK/ADXL_Test/Core/Inc/stm32l4xx_hal_conf.h:
 
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h:
 

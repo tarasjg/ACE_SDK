@@ -1,2 +1,6 @@
-accel.c:15:6:reg_read	40	static
-accel.c:27:6:reg_write	40	static
+accel.c:18:6:reg_read	40	static
+accel.c:30:13:reg_write	40	static
+accel.c:42:13:fifo_init	16	static
+accel.c:47:13:int1_init	16	static
+accel.c:51:6:stream_start	16	static
+accel.c:58:6:fifo_data	40	static
