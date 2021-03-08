@@ -55,8 +55,8 @@ void stream_start(SPI_Comm spi) {
 	reg_write(spi, ADXL372_POWER_CTL, 0x03); //full bandwidth mode; HPF/LPF enabled
 }
 
-void fifo_data(SPI_Comm spi, uint8_t* data) { //important that user provide data of size 512 bytes
+void fifo_data(SPI_Comm spi, uint8_t* data, unsigned int data_size) {
 	uint8_t dummy = 0;
-	reg_read(spi, ADXL372_FIFO_DATA, data, sizeof data);
+	reg_read(spi, ADXL372_FIFO_DATA, data, data_size);
 	reg_read(spi, ADXL372_STATUS_1, &dummy, sizeof dummy);
 }
