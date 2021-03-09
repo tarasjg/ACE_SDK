@@ -210,9 +210,6 @@ void SysTick_Handler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-	if(__HAL_GPIO_EXTI_GET_FLAG(GPIO_PIN_7)) {
-		fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
-	}
 
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
