@@ -1,6 +1,5 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
 ################################################################################
 
 -include ../makefile.init
@@ -29,12 +28,6 @@ endif
 
 -include ../makefile.defs
 
-OPTIONAL_TOOL_DEPS := \
-$(wildcard ../makefile.defs) \
-$(wildcard ../makefile.init) \
-$(wildcard ../makefile.targets) \
-
-
 BUILD_ARTIFACT_NAME := ADXL_Test
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX := 
@@ -61,22 +54,22 @@ all: main-build
 main-build: ADXL_Test.elf secondary-outputs
 
 # Tool invocations
-ADXL_Test.elf: $(OBJS) $(USER_OBJS) C:\Users\John\ Tarasidis\Documents\GitHub\ACE_SDK\ADXL_Test\STM32L452RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ADXL_Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\John Tarasidis\Documents\GitHub\ACE_SDK\ADXL_Test\STM32L452RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ADXL_Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ADXL_Test.elf: $(OBJS) $(USER_OBJS) C:\Users\jonny\STM32CubeIDE\workspace_1.5.1\ADXL_Test\STM32L452RETX_FLASH.ld
+	arm-none-eabi-gcc -o "ADXL_Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jonny\STM32CubeIDE\workspace_1.5.1\ADXL_Test\STM32L452RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ADXL_Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+default.size.stdout: $(EXECUTABLES)
 	arm-none-eabi-size  $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-ADXL_Test.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+ADXL_Test.list: $(EXECUTABLES)
 	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "ADXL_Test.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-ADXL_Test.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+ADXL_Test.bin: $(EXECUTABLES)
 	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "ADXL_Test.bin"
 	@echo 'Finished building: $@'
 	@echo ' '

@@ -45,7 +45,6 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t fifo_buffer[512];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,7 +58,10 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+GPIO_Pin chip_select;
+SPI_Comm accel_spi;
+uint8_t fifo_buffer[512];
+size_t fifo_buffer_size;
 /* USER CODE END 0 */
 
 /**
@@ -95,84 +97,28 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
+  // initialize SPI
+  chip_select.port = GPIOB;
+  chip_select.pin = GPIO_PIN_6;
+  accel_spi.handle = &hspi1;
+  accel_spi.cs = &chip_select;
 
-
-  GPIO_Pin chip_select = {
-  		.port = GPIOB,
-  		.pin = GPIO_PIN_6
-  };
-
-  SPI_Comm accel_spi = {
-  		.handle = &hspi1,
-  		.cs = &chip_select
-  };
-
-  uint8_t fifo_buffer[512];
-
-  //uint8_t rxbuffer = 0;
-
-  // Set Stand By Mode
-  //uint8_t payload = 0;
-  //reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
-  //reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
-
-  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  //HAL_Delay(100);
-
-  // Set FIFO Mode
-  //payload = (uint8_t) 0x02; // 00000010 - stream
-  //reg_write(accel_spi, (uint8_t) ADXL372_FIFO_CTL, payload);
-  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_CTL, (uint8_t*) &rxbuffer);
-
-  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  //HAL_Delay(100);
-
-  // Set Full Bandwidth Mode with high threshold
-  //payload = (uint8_t) 0x23; // 00100011
-  //reg_write(accel_spi, (uint8_t) ADXL372_POWER_CTL, payload);
-  //reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
-
-  //HAL_UART_Transmit(&huart2, &rxbuffer, sizeof(rxbuffer), HAL_MAX_DELAY);
-  //HAL_Delay(100);
-
-  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_SAMPLES, (uint8_t*) &rxbuffer);
-
-
-  /*
-  		reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &tmp_buffer);
-  		uint8_t *fifo_buffer;
-  		fifo_buffer = (uint8_t *) malloc(*tmp_buffer);
-  		reg_read(accel_spi, (uint8_t) ADXL372_POWER_CTL, (uint8_t*) &rxbuffer);
-  */
+  fifo_buffer_size = sizeof(fifo_buffer);
 
   stream_start(accel_spi);
+  fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //int rxbufferFIFO = 0;
-  //int enough = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	// Set Read the FIFO Register
 
-	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_1, (uint8_t*) &rxbufferFIFO);
-	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_ENTRIES_2, (uint8_t*) &rxbufferFIFO);
-	  //reg_read(accel_spi, (uint8_t) ADXL372_STATUS_1, (uint8_t*) &rxbufferFIFO);
-	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &rxbufferFIFO);
-	  //enough = (rxbufferFIFO > 0) ? (int)(((ceil(log10(rxbufferFIFO))+1)*sizeof(char)) + 2) : 3;
-	  //char printstr[enough];
-	  //char *printstr;
-	  //printstr = (char *) malloc(enough);
-	  //sprintf(printstr, "%d\r\n", rxbufferFIFO);
-	  //HAL_UART_Transmit(&huart2, &printstr, sizeof(printstr), HAL_MAX_DELAY);
-	  //free(printstr);
-
-	  reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
-	  //fifo_data(accel_spi, fifo_buffer);
+	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
 
 	  HAL_Delay(10);
   }
@@ -334,7 +280,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PC7 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -346,8 +292,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 

@@ -87,7 +87,7 @@ typedef struct spi_comms {
 } SPI_Comm;
 
 void stream_start(SPI_Comm);
-void fifo_data(SPI_Comm, uint8_t*, unsigned int);
+void fifo_data(SPI_Comm, uint8_t*, size_t);
 
 
 #endif /* INC_ACCEL_H_ */

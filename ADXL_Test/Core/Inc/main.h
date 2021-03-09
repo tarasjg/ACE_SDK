@@ -42,8 +42,9 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-SPI_Comm accel_spi;
-uint8_t fifo_buffer[512];
+
+
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -72,6 +73,10 @@ void Error_Handler(void);
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+
+extern SPI_Comm accel_spi;
+extern uint8_t fifo_buffer[512];
+extern size_t fifo_buffer_size;
 
 /* USER CODE END Private defines */
 
