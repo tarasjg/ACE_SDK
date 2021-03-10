@@ -18,14 +18,10 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#define ARM_MATH_CM4
 
 #include "main.h"
-#include "arm_math.h"
+#include "filters.h"
 #include "testdata.h"
-#if defined(SEMIHOSTING)
-#include <stdio.h>
-#endif
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,15 +29,14 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-//#define TEST_LENGTH_SAMPLES 320
+
 #define SNR_THRESHOLD_F32 	75.0f
-#define BLOCK_SIZE 			32
-#define NUM_TAPS			29
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//#define ARM_MATH_CM4
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,19 +51,7 @@ UART_HandleTypeDef huart2;
 extern float32_t test_input[TEST_LENGTH_SAMPLES];
 extern float32_t ref_output[TEST_LENGTH_SAMPLES];
 
-static float32_t testOutput[TEST_LENGTH_SAMPLES];
-static float32_t firStateF32[BLOCK_SIZE + NUM_TAPS - 1];
-const float32_t firCoeffs32[NUM_TAPS] = {
-		-0.000000f, 0.003130f, 0.006635f, 0.007290f, -0.000000f, -0.015670f,
-		-0.030045f, -0.027445f, -0.000000f, 0.040380f, 0.065543f, 0.051462f,
-		-0.000000f, -0.057857f, 0.913154f, -0.057857f, -0.000000f, 0.051462f,
-		0.065543f, 0.040380f, -0.000000f, -0.027445f, -0.030045f, -0.015670f,
-		-0.000000f, 0.007290f, 0.006635f, 0.003130f, -0.000000f
-};
-
-uint32_t blockSize = BLOCK_SIZE;
-uint32_t numBlocks = TEST_LENGTH_SAMPLES/BLOCK_SIZE;
-float32_t snr;
+static float32_t test_output[TEST_LENGTH_SAMPLES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,52 +64,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float arm_snr_f32(float *pRef, float *pTest, uint32_t buffSize)
-{
-  float EnergySignal = 0.0, EnergyError = 0.0;
-  uint32_t i;
-  float SNR;
-  int temp;
-  int *test;
 
-  for (i = 0; i < buffSize; i++)
-    {
- 	  /* Checking for a NAN value in pRef array */
-	  test =   (int *)(&pRef[i]);
-      temp =  *test;
-
-	  if (temp == 0x7FC00000)
-	  {
-	  		return(0);
-	  }
-
-	  /* Checking for a NAN value in pTest array */
-	  test =   (int *)(&pTest[i]);
-      temp =  *test;
-
-	  if (temp == 0x7FC00000)
-	  {
-	  		return(0);
-	  }
-      EnergySignal += pRef[i] * pRef[i];
-      EnergyError += (pRef[i] - pTest[i]) * (pRef[i] - pTest[i]);
-    }
-
-	/* Checking for a NAN value in EnergyError */
-	test =   (int *)(&EnergyError);
-    temp =  *test;
-
-    if (temp == 0x7FC00000)
-    {
-  		return(0);
-    }
-
-
-  SNR = 10 * log10 (EnergySignal / EnergyError);
-
-  return (SNR);
-
-}
 /* USER CODE END 0 */
 
 /**
@@ -159,46 +97,24 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t i;
-  arm_fir_instance_f32 S;
+
+  float32_t snr;
   arm_status status;
-  float32_t  *inputF32, *outputF32;
-  /* Initialize input and output buffer pointers */
-  inputF32 = &test_input[0];
-  outputF32 = &testOutput[0];
-  /* Call FIR init function to initialize the instance structure. */
-  arm_fir_init_f32(&S, NUM_TAPS, (float32_t *)&firCoeffs32[0], &firStateF32[0], blockSize);
-  /* ----------------------------------------------------------------------
-  ** Call the FIR process function for every blockSize samples
-  ** ------------------------------------------------------------------- */
-  for(i=0; i < numBlocks; i++)
-  {
-    arm_fir_f32(&S, inputF32 + (i * blockSize), outputF32 + (i * blockSize), blockSize);
-  }
-  /* ----------------------------------------------------------------------
-  ** Compare the generated output against the reference output computed
-  ** in MATLAB.
-  ** ------------------------------------------------------------------- */
-  snr = arm_snr_f32(&ref_output[0], &testOutput[0], TEST_LENGTH_SAMPLES);
+
+  bandpass_filter(test_input, test_output, TEST_LENGTH_SAMPLES);
+
+  snr = arm_snr_f32(&ref_output[0], &test_output[0], TEST_LENGTH_SAMPLES);
   status = (snr < SNR_THRESHOLD_F32) ? ARM_MATH_TEST_FAILURE : ARM_MATH_SUCCESS;
 
-  if (status != ARM_MATH_SUCCESS) {
-#if defined(SEMIHOSTING)
-	  printf("FAILURE\n");
-#else
-	  while(1);
-#endif
-  } else {
-#if defined(SEMIHOSTING)
-	  printf("SUCCESS\n");
-#else
-	  while(1) {
-		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+  while (1) {
+	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  // Blink fast if failure, blink slow if success
+	  if (status != ARM_MATH_SUCCESS) {
+		  HAL_Delay(100);
+	  } else {
 		  HAL_Delay(1000);
 	  }
-#endif
   }
-
 
   /* USER CODE END 2 */
 
