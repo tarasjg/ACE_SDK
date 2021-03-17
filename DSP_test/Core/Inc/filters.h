@@ -18,6 +18,7 @@
 // Result is then placed into passed-in output array
 // Input and output arrays should both be longer than sample_length
 void bandpass_filter(float32_t *input, float32_t *output, uint32_t sample_length);
+void bandpass_filter_q15(float32_t *input, float32_t *output, uint32_t sample_length);
 
 // Calculates the signal to noise ratio between reference data and test data
 // This snr value should be used to compare to a threshold value
