@@ -23,6 +23,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "accel.h"
+
+// for debugging
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,10 +62,15 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+volatile uint8_t spi_xmit_flag = 0;
+volatile uint8_t spi_recv_flag = 0;
+volatile uint8_t fifo_read_flag = 0;
+
 GPIO_Pin chip_select;
 SPI_Comm accel_spi;
-uint8_t fifo_buffer[512];
+uint8_t fifo_buffer[FIFO_SAMPLES];
 size_t fifo_buffer_size;
+
 /* USER CODE END 0 */
 
 /**
@@ -105,7 +114,7 @@ int main(void)
 
   fifo_buffer_size = sizeof(fifo_buffer);
 
-  stream_start(accel_spi);
+  stream_start(accel_spi, FIFO_SAMPLES);
   fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
 
   /* USER CODE END 2 */
@@ -117,7 +126,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
 	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
 
 	  HAL_Delay(10);
@@ -298,13 +306,63 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
+{
+  // Set CS pin to high and raise flag
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+  spi_xmit_flag = 1;
+}
+
+void printBinary(uint16_t num)
+{
+	char printstr[1];
+	int a;
+	uint16_t bit;
+	for (int i = 1 << 15; i > 0; i = i/2) {
+		bit = (uint16_t)i;
+		a = (bit & num) ? 1 : 0;
+		sprintf(printstr, "%d", a);
+		HAL_UART_Transmit(&huart2, printstr, sizeof(printstr), HAL_MAX_DELAY);
+	}
+	printstr[0] = ' ';
+	HAL_UART_Transmit(&huart2, printstr, sizeof(printstr), HAL_MAX_DELAY);
+	return;
+}
+
+// This is called when SPI receive is done
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef * hspi)
+{
+	if (fifo_read_flag) {
+		fifo_read_flag = 0;
+		uint8_t dummy = 0;
+		//uint8_t tx = (ADXL372_STATUS_1 << 1) | 0x01;
+		//HAL_SPI_Transmit(hspi, (uint8_t *)&tx, sizeof(tx), HAL_MAX_DELAY);
+		//HAL_SPI_Receive(hspi, (uint8_t *)&dummy, sizeof(dummy), HAL_MAX_DELAY);
+		HAL_UART_Transmit(&huart2, fifo_buffer, fifo_buffer_size, HAL_MAX_DELAY);
+		reg_read_IT(accel_spi, ADXL372_STATUS_1, &dummy, sizeof(dummy));
+	}
+	// Set CS pin to high and raise flag
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+	spi_recv_flag = 1;
+}
+
+
+
 
 // ISR for FIFO Full
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	/*
+	uint8_t dummy = 0;
+	reg_read(accel_spi, ADXL372_FIFO_ENTRIES_2, &dummy, sizeof(dummy));
+	reg_read(accel_spi, ADXL372_FIFO_ENTRIES_1, &dummy, sizeof(dummy));
+	*/
 	if(GPIO_Pin == GPIO_PIN_7) {
-		fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
+		fifo_read_flag = 1;
+		//fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
+		reg_read_IT(accel_spi, ADXL372_FIFO_DATA, fifo_buffer, fifo_buffer_size);
 	}
+
 }
 /* USER CODE END 4 */
 

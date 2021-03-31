@@ -74,8 +74,10 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
+#define FIFO_SAMPLES 504
+
 extern SPI_Comm accel_spi;
-extern uint8_t fifo_buffer[512];
+extern uint8_t fifo_buffer[FIFO_SAMPLES];
 extern size_t fifo_buffer_size;
 
 /* USER CODE END Private defines */
