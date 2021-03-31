@@ -9,6 +9,9 @@
 
 extern QSPI_HandleTypeDef hqspi;
 
+//global command structures
+
+
 /*
  * This function performs the following set up flow:
  *
@@ -22,7 +25,7 @@ extern QSPI_HandleTypeDef hqspi;
  */
 uint8_t mem_init(void) {
 	//WREN - p20 on datasheet
-	QSPI_CommandTypeDef write_enable;
+	QSPI_CommandTypeDef write_enable = {0};
 	write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 	write_enable.Instruction = 0x06;
 	write_enable.AddressMode = QSPI_ADDRESS_NONE;
@@ -35,7 +38,7 @@ uint8_t mem_init(void) {
 
 	HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
 
-	QSPI_CommandTypeDef read_status_register;
+	QSPI_CommandTypeDef read_status_register = {0};
 	read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 	read_status_register.Instruction = 0x05;
 	read_status_register.AddressMode = QSPI_ADDRESS_NONE;
@@ -49,16 +52,16 @@ uint8_t mem_init(void) {
 	QSPI_AutoPollingTypeDef RDSR_WEL;
 	RDSR_WEL.Match = 0x02;
 	RDSR_WEL.Mask = 0x02;
-	RDSR_WEL.Interval = 5;
+	RDSR_WEL.Interval = 1;
 	RDSR_WEL.StatusBytesSize = 0x01;
 	RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
 	RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
 
-	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 15) == HAL_ERROR) {
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35) == HAL_ERROR) {
 		return MEM_INIT_FAIL;
 	}
 
-	QSPI_CommandTypeDef write_status_register;
+	QSPI_CommandTypeDef write_status_register = {0};
 	write_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 	write_status_register.Instruction = 0x01;
 	write_status_register.AddressMode = QSPI_ADDRESS_NONE;
@@ -77,12 +80,12 @@ uint8_t mem_init(void) {
 	QSPI_AutoPollingTypeDef RDSR_WIP;
 	RDSR_WIP.Match = 0x00;
 	RDSR_WIP.Mask = 0x01;
-	RDSR_WIP.Interval = 5;
+	RDSR_WIP.Interval = 1;
 	RDSR_WIP.StatusBytesSize = 0x01;
 	RDSR_WIP.MatchMode = QSPI_MATCH_MODE_AND;
 	RDSR_WIP.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
 
-	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 15) == HAL_ERROR) {
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 35) == HAL_ERROR) {
 		return MEM_INIT_FAIL;
 	}
 
@@ -108,7 +111,23 @@ uint8_t mem_init(void) {
  * Output: void; data_r will be populated with the data from the external memory
  */
 void mem_read(uint32_t addr, uint8_t* data_r) {
+	QSPI_CommandTypeDef quad_read = {0};
+	quad_read.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	quad_read.Instruction = 0x6B;
+	quad_read.AddressMode = QSPI_ADDRESS_1_LINE;
+	quad_read.Address = addr;
+	quad_read.AddressSize = QSPI_ADDRESS_24_BITS;
+	quad_read.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	quad_read.DataMode = QSPI_DATA_4_LINES;
+	quad_read.NbData = 32;
+	quad_read.DummyCycles = 8;
+	quad_read.DdrMode = QSPI_DDR_MODE_DISABLE;
+	quad_read.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+	//quad_read.SIOOMode = QSPI_SIOO_INST_ONLY_FIRST_CMD;
 
+	HAL_QSPI_Command(&hqspi, &quad_read, HAL_MAX_DELAY);
+
+	HAL_QSPI_Receive(&hqspi, data_r, HAL_MAX_DELAY);
 }
 
 /*
@@ -128,7 +147,66 @@ void mem_read(uint32_t addr, uint8_t* data_r) {
  * Output: return 1 on completion
  */
 uint8_t mem_write(uint32_t addr, uint8_t* data_w, uint8_t len) {
+	uint8_t addr_LSB = addr & 0xFF;
+	if (addr_LSB == 0x00 || (addr_LSB + len < 256)) {
+		QSPI_CommandTypeDef write_enable = {0};
+		write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+		write_enable.Instruction = 0x06;
+		write_enable.AddressMode = QSPI_ADDRESS_NONE;
+		write_enable.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+		write_enable.DataMode = QSPI_DATA_NONE;
+		write_enable.NbData = 0;
+		write_enable.DummyCycles = 0;
+		write_enable.DdrMode = QSPI_DDR_MODE_DISABLE;
+		write_enable.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
+		HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
+
+		QSPI_CommandTypeDef read_status_register = {0};
+		read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+		read_status_register.Instruction = 0x05;
+		read_status_register.AddressMode = QSPI_ADDRESS_NONE;
+		read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+		read_status_register.DataMode = QSPI_DATA_1_LINE;
+		read_status_register.NbData = 1;
+		read_status_register.DummyCycles = 0;
+		read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
+		read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+
+		QSPI_AutoPollingTypeDef RDSR_WEL;
+		RDSR_WEL.Match = 0x02;
+		RDSR_WEL.Mask = 0x02;
+		RDSR_WEL.Interval = 1;
+		RDSR_WEL.StatusBytesSize = 0x01;
+		RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
+		RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+
+		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35) == HAL_ERROR) {
+			return MEM_WRITE_TIMEOUT;
+		}
+
+		QSPI_CommandTypeDef four_page_program = {0};
+		four_page_program.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+		four_page_program.Instruction = 0x38;
+		four_page_program.AddressMode = QSPI_ADDRESS_4_LINES;
+		four_page_program.Address = addr;
+		four_page_program.AddressSize = QSPI_ADDRESS_24_BITS;
+		four_page_program.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+		four_page_program.DataMode = QSPI_DATA_4_LINES;
+		four_page_program.NbData = len;
+		four_page_program.DummyCycles = 0;
+		four_page_program.DdrMode = QSPI_DDR_MODE_DISABLE;
+		four_page_program.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+		//four_page_program.SIOOMode = QSPI_SIOO_INST_ONLY_FIRST_CMD;
+
+		HAL_QSPI_Command(&hqspi, &four_page_program, HAL_MAX_DELAY);
+
+		HAL_QSPI_Transmit(&hqspi, data_w, HAL_MAX_DELAY);
+
+		return MEM_WRITE_SUCCESS;
+	} else {
+		return MEM_WRITE_INVALID_LENGTH;
+	}
 }
 
 /*
@@ -142,5 +220,66 @@ uint8_t mem_write(uint32_t addr, uint8_t* data_w, uint8_t len) {
  * 		   return 1 if WIP match
  */
 uint8_t mem_chip_erase(void) {
+	QSPI_CommandTypeDef write_enable = {0};
+	write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	write_enable.Instruction = 0x06;
+	write_enable.AddressMode = QSPI_ADDRESS_NONE;
+	write_enable.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	write_enable.DataMode = QSPI_DATA_NONE;
+	write_enable.NbData = 0;
+	write_enable.DummyCycles = 0;
+	write_enable.DdrMode = QSPI_DDR_MODE_DISABLE;
+	write_enable.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
+	HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
+
+	QSPI_CommandTypeDef read_status_register = {0};
+	read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	read_status_register.Instruction = 0x05;
+	read_status_register.AddressMode = QSPI_ADDRESS_NONE;
+	read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	read_status_register.DataMode = QSPI_DATA_1_LINE;
+	read_status_register.NbData = 1;
+	read_status_register.DummyCycles = 0;
+	read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
+	read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+
+	QSPI_AutoPollingTypeDef RDSR_WEL;
+	RDSR_WEL.Match = 0x02;
+	RDSR_WEL.Mask = 0x02;
+	RDSR_WEL.Interval = 5;
+	RDSR_WEL.StatusBytesSize = 0x01;
+	RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
+	RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35) == HAL_ERROR) {
+		return MEM_ERASE_TIMEOUT;
+	}
+
+	QSPI_CommandTypeDef chip_erase = {0};
+	chip_erase.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	chip_erase.Instruction = 0xC7;
+	chip_erase.AddressMode = QSPI_ADDRESS_NONE;
+	chip_erase.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	chip_erase.DataMode = QSPI_DATA_NONE;
+	chip_erase.NbData = 0;
+	chip_erase.DummyCycles = 0;
+	chip_erase.DdrMode = QSPI_DDR_MODE_DISABLE;
+	chip_erase.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+
+	HAL_QSPI_Command(&hqspi, &chip_erase, HAL_MAX_DELAY);
+
+	QSPI_AutoPollingTypeDef RDSR_WIP;
+	RDSR_WIP.Match = 0x00;
+	RDSR_WIP.Mask = 0x01;
+	RDSR_WIP.Interval = 5;
+	RDSR_WIP.StatusBytesSize = 0x01;
+	RDSR_WIP.MatchMode = QSPI_MATCH_MODE_AND;
+	RDSR_WIP.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 250000) == HAL_ERROR) {
+		return MEM_ERASE_TIMEOUT;
+	} else {
+		return MEM_ERASE_SUCCESS;
+	}
 }

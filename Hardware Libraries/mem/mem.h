@@ -14,8 +14,9 @@
 #define MEM_ERASE_SUCCESS 0x01
 #define MEM_ERASE_TIMEOUT 0x00
 
-#define MEM_WRITE_SUCCESS 0x01
-#define MEM_WRITE_TIMEOUT 0x00
+#define MEM_WRITE_SUCCESS 		 0x01
+#define MEM_WRITE_INVALID_LENGTH 0x02
+#define MEM_WRITE_TIMEOUT  		 0x00
 
 uint8_t mem_init(void);
 
