@@ -86,9 +86,12 @@ typedef struct spi_comms {
 	GPIO_Pin* cs;
 } SPI_Comm;
 
+void reg_read(SPI_Comm, uint8_t, uint8_t*, size_t);
+void reg_read_CS(SPI_Comm, uint8_t, uint8_t*, size_t);
+void reg_read_IT(SPI_Comm, uint8_t, uint8_t*, size_t);
 
+void stream_start(SPI_Comm, int);
+void fifo_data(SPI_Comm, uint8_t*, size_t);
 
-uint8_t reg_read(SPI_Comm, uint8_t);
-void reg_write(SPI_Comm, uint8_t, uint8_t);
 
 #endif /* INC_ACCEL_H_ */
