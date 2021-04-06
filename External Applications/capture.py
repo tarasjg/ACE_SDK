@@ -17,11 +17,13 @@ if dev_port == 0:
 
 
 # now that we have the port, lets open it
-ser = serial.Serial(dev_port)
+ser = serial.Serial(dev_port, baudrate=115200)
 #ser.write(0xAA)  # magic number that triggers a dump in firmware
+print("connected to Serial Port")
 
 data = ser.read(504)  # read 8 megabytes of data, we should not do this
 
+print("read data")
 # I think more likely we will be getting things in 1kB chunks
 # but need to figure out how we will do it in firmware to fix this part
 
@@ -31,12 +33,10 @@ for byte in data:
     #data_int.append(int.from_bytes(byte, byteorder='big', signed=True))
     data_int.append(byte)
 
-print(data_int)
+print("converted data to array")
 
 with open('dump.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(data_int)
 
-
 print("Succesfully wrote to CSV")
-
