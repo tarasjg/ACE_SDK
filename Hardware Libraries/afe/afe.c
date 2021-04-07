@@ -37,9 +37,9 @@ void afe_init(void) {
 	afe_set_srb();	//mux reference to CHn
 	afe_set_bias(); //enable internal reference, enable bias amp, mux CHp&n to bias inverting
 
-	afe_write_ch(0b01100000); //set gain of 24, enable normal electrode input
+	afe_write_ch(0b00000000); //set gain of 24, enable normal electrode input
 	HAL_GPIO_WritePin(ADS_START_GPIO_Port, ADS_START_Pin, GPIO_PIN_SET); //start conversion
-	//afe_rdatac();
+	afe_rdatac();
 }
 
 void afe_sdatac(void) {
@@ -57,10 +57,10 @@ void afe_rdatac(void) {
 }
 
 void afe_rdata(uint8_t* sample) {
-	uint8_t rdata = 0b00010010;
+	//uint8_t rdata = 0b00010010;
 	uint8_t zero[27] = {0};
 	HAL_GPIO_TogglePin(ADS_CS_GPIO_Port, ADS_CS_Pin);
-	HAL_SPI_Transmit(&hspi3, &rdata, 1, HAL_MAX_DELAY);//read data
+	//HAL_SPI_Transmit(&hspi3, &rdata, 1, HAL_MAX_DELAY);//read data
 	HAL_SPI_TransmitReceive(&hspi3, zero, sample, 27, HAL_MAX_DELAY);
 	HAL_GPIO_TogglePin(ADS_CS_GPIO_Port, ADS_CS_Pin);
 }
