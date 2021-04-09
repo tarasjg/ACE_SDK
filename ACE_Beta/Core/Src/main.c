@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "mem.h"
 #include "afe.h"
+#include "accel.h"
 #include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
@@ -72,8 +73,8 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t data[250][27];
-uint8_t volatile flag = 0;
+GPIO_Pin acc_chip_sel;
+SPI_Comm acc_spi;
 /* USER CODE END 0 */
 
 /**
@@ -93,6 +94,11 @@ int main(void)
   flash_gpio.Pin = GPIO_PIN_6 | GPIO_PIN_7; //QUADSPI IO3 and IO2
   flash_gpio.Speed = GPIO_SPEED_FREQ_MEDIUM;
   flash_gpio.Alternate = GPIO_AF10_QUADSPI;
+
+  acc_chip_sel.port = GPIOC;
+  acc_chip_sel.pin = GPIO_PIN_4;
+  acc_spi.handle = &hspi1;
+  acc_spi.cs = &acc_chip_sel;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -101,17 +107,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  if (mem_init()) {
-	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-	  HAL_Delay(100);
-	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-  }
 
-  afe_init();
-
-  HAL_GPIO_DeInit(GPIOA, &flash_gpio);
-  HAL_GPIO_Init(GPIOA, &accel_gpio);
-  MX_SPI1_Init();
 
   /* USER CODE END Init */
 
@@ -130,12 +126,25 @@ int main(void)
   MX_TIM6_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+  if (mem_init()) {
+	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+	  HAL_Delay(100);
+	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+  }
 
+  afe_init();
 
+  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);  //reset the two shared GPIOs from the QUADSPI
+  HAL_GPIO_Init(GPIOA, &accel_gpio);  //set them up for SPI
+  MX_SPI1_Init();  //init SPI1
+  stream_start(acc_spi, 504);
+  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
+  HAL_GPIO_Init(GPIOA, &flash_gpio);
 
 
   uint8_t afe_sample[27] = {0};
   uint8_t data_blk[32] = {0};
+  uint8_t acc_fifo_dump[504] = {0};
   uint32_t master_memory_addr = 0;
 
 
@@ -157,10 +166,14 @@ int main(void)
 			  sys_stat &= ~AFE_DRDY;
 			  break;
 		  case ACC_DRDY_AND_MEM_AVAIL :
-			  //capture accel FIFO and write
-
-
-			  master_memory_addr += 508;
+			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
+			  HAL_GPIO_Init(GPIOA, &accel_gpio);
+			  fifo_data(acc_spi, acc_fifo_dump, 504);
+			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
+			  HAL_GPIO_Init(GPIOA, &flash_gpio);
+			  master_memory_addr += 3; //insert 3 bytes of 0xFF
+			  mem_write(master_memory_addr, acc_fifo_dump, 504);
+			  master_memory_addr += 504;
 			  sys_stat &= ~ACC_DRDY;
 			  break;
 		  case SYS_DUMP :
