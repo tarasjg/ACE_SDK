@@ -9,7 +9,7 @@ dev_port = 0
 for port in ports:
     #if port.pid == 11111:
     print(port.name)
-    dev_port = port.name
+    dev_port = "COM12" #port.name
 
 if dev_port == 0:
     print("Device not found, exiting...")
@@ -17,11 +17,11 @@ if dev_port == 0:
 
 
 # now that we have the port, lets open it
-ser = serial.Serial(dev_port, baudrate=115200)
-#ser.write(0xAA)  # magic number that triggers a dump in firmware
+ser = serial.Serial(dev_port, baudrate=4000000)
+ser.write([170])  # magic number that triggers a dump in firmware
 print("connected to Serial Port")
 
-data = ser.read(504)  # read 8 megabytes of data, we should not do this
+data = ser.read(8000000)  # read 8 megabytes of data, we should not do this
 
 print("read data")
 # I think more likely we will be getting things in 1kB chunks
