@@ -22,7 +22,7 @@ uint8_t mem_init(void);
 
 void mem_read(uint32_t, uint8_t*);
 
-uint8_t mem_write(uint32_t, uint8_t*, uint8_t);
+uint8_t mem_write(uint32_t, uint8_t*, uint16_t);
 
 uint8_t mem_chip_erase(void);
 

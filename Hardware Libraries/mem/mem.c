@@ -119,7 +119,7 @@ void mem_read(uint32_t addr, uint8_t* data_r) {
 	quad_read.AddressSize = QSPI_ADDRESS_24_BITS;
 	quad_read.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
 	quad_read.DataMode = QSPI_DATA_4_LINES;
-	quad_read.NbData = 32;
+	quad_read.NbData = 1;
 	quad_read.DummyCycles = 8;
 	quad_read.DdrMode = QSPI_DDR_MODE_DISABLE;
 	quad_read.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
@@ -146,66 +146,88 @@ void mem_read(uint32_t addr, uint8_t* data_r) {
  *
  * Output: return 1 on completion
  */
-uint8_t mem_write(uint32_t addr, uint8_t* data_w, uint8_t len) {
+uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 	uint8_t addr_LSB = addr & 0xFF;
-	if (addr_LSB == 0x00 || (addr_LSB + len < 256)) {
-		QSPI_CommandTypeDef write_enable = {0};
-		write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
-		write_enable.Instruction = 0x06;
-		write_enable.AddressMode = QSPI_ADDRESS_NONE;
-		write_enable.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
-		write_enable.DataMode = QSPI_DATA_NONE;
-		write_enable.NbData = 0;
-		write_enable.DummyCycles = 0;
-		write_enable.DdrMode = QSPI_DDR_MODE_DISABLE;
-		write_enable.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+	uint16_t len_for_cur_page = (uint16_t) addr_LSB + (uint16_t) len;
+	if (len_for_cur_page > 256) {
+		len_for_cur_page = 256 - addr_LSB;
+	}
+	QSPI_CommandTypeDef write_enable = { 0 };
+	write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	write_enable.Instruction = 0x06;
+	write_enable.AddressMode = QSPI_ADDRESS_NONE;
+	write_enable.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	write_enable.DataMode = QSPI_DATA_NONE;
+	write_enable.NbData = 0;
+	write_enable.DummyCycles = 0;
+	write_enable.DdrMode = QSPI_DDR_MODE_DISABLE;
+	write_enable.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
-		HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
+	HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
 
-		QSPI_CommandTypeDef read_status_register = {0};
-		read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
-		read_status_register.Instruction = 0x05;
-		read_status_register.AddressMode = QSPI_ADDRESS_NONE;
-		read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
-		read_status_register.DataMode = QSPI_DATA_1_LINE;
-		read_status_register.NbData = 1;
-		read_status_register.DummyCycles = 0;
-		read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
-		read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+	QSPI_CommandTypeDef read_status_register = { 0 };
+	read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	read_status_register.Instruction = 0x05;
+	read_status_register.AddressMode = QSPI_ADDRESS_NONE;
+	read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	read_status_register.DataMode = QSPI_DATA_1_LINE;
+	read_status_register.NbData = 1;
+	read_status_register.DummyCycles = 0;
+	read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
+	read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
-		QSPI_AutoPollingTypeDef RDSR_WEL;
-		RDSR_WEL.Match = 0x02;
-		RDSR_WEL.Mask = 0x02;
-		RDSR_WEL.Interval = 1;
-		RDSR_WEL.StatusBytesSize = 0x01;
-		RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
-		RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+	QSPI_AutoPollingTypeDef RDSR_WEL;
+	RDSR_WEL.Match = 0x02;
+	RDSR_WEL.Mask = 0x02;
+	RDSR_WEL.Interval = 1;
+	RDSR_WEL.StatusBytesSize = 0x01;
+	RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
+	RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
 
-		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35) == HAL_ERROR) {
-			return MEM_WRITE_TIMEOUT;
-		}
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35)
+			== HAL_ERROR) {
+		return MEM_WRITE_TIMEOUT;
+	}
 
-		QSPI_CommandTypeDef four_page_program = {0};
-		four_page_program.InstructionMode = QSPI_INSTRUCTION_1_LINE;
-		four_page_program.Instruction = 0x38;
-		four_page_program.AddressMode = QSPI_ADDRESS_4_LINES;
-		four_page_program.Address = addr;
-		four_page_program.AddressSize = QSPI_ADDRESS_24_BITS;
-		four_page_program.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
-		four_page_program.DataMode = QSPI_DATA_4_LINES;
-		four_page_program.NbData = len;
-		four_page_program.DummyCycles = 0;
-		four_page_program.DdrMode = QSPI_DDR_MODE_DISABLE;
-		four_page_program.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
-		//four_page_program.SIOOMode = QSPI_SIOO_INST_ONLY_FIRST_CMD;
+	QSPI_CommandTypeDef four_page_program = { 0 };
+	four_page_program.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	four_page_program.Instruction = 0x38;
+	four_page_program.AddressMode = QSPI_ADDRESS_4_LINES;
+	four_page_program.Address = addr;
+	four_page_program.AddressSize = QSPI_ADDRESS_24_BITS;
+	four_page_program.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	four_page_program.DataMode = QSPI_DATA_4_LINES;
+	four_page_program.NbData = len_for_cur_page;
+	four_page_program.DummyCycles = 0;
+	four_page_program.DdrMode = QSPI_DDR_MODE_DISABLE;
+	four_page_program.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+	//four_page_program.SIOOMode = QSPI_SIOO_INST_ONLY_FIRST_CMD;
 
-		HAL_QSPI_Command(&hqspi, &four_page_program, HAL_MAX_DELAY);
+	HAL_QSPI_Command(&hqspi, &four_page_program, HAL_MAX_DELAY);
 
-		HAL_QSPI_Transmit(&hqspi, data_w, HAL_MAX_DELAY);
+	HAL_QSPI_Transmit(&hqspi, data_w, HAL_MAX_DELAY);
 
+	//update values
+	len -= len_for_cur_page;
+	addr += len_for_cur_page;
+	if (len == 0) {
 		return MEM_WRITE_SUCCESS;
 	} else {
-		return MEM_WRITE_INVALID_LENGTH;
+		QSPI_AutoPollingTypeDef RDSR_WIP;
+		RDSR_WIP.Match = 0x00;
+		RDSR_WIP.Mask = 0x01;
+		RDSR_WIP.Interval = 5;
+		RDSR_WIP.StatusBytesSize = 0x01;
+		RDSR_WIP.MatchMode = QSPI_MATCH_MODE_AND;
+		RDSR_WIP.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP,
+				250000) == HAL_ERROR) {
+			return MEM_ERASE_TIMEOUT;
+		} else {
+			data_w += len_for_cur_page;
+			mem_write(addr, data_w, len);
+		}
+
 	}
 }
 
