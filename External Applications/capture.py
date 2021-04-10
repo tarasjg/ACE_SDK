@@ -21,7 +21,7 @@ ser = serial.Serial(dev_port, baudrate=4000000)
 ser.write([170])  # magic number that triggers a dump in firmware  0xA5 is 165
 print("connected to Serial Port")
 
-data = ser.read(1000000)  # read 8 megabytes of data, we should not do this
+data = ser.read(8000000)  # read 8 megabytes of data, we should not do this
 
 print("read data")
 # I think more likely we will be getting things in 1kB chunks

@@ -216,6 +216,7 @@ Mcu.IP6=USART1
 Mcu.Pin29=VP_SYS_VS_Systick
 Mcu.IP7=USB
 ProjectManager.CoupleFile=false
+NVIC.EXTI0_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 RCC.SYSCLKFreq_VALUE=16000000
 PB5.Signal=SPI3_MOSI
 Mcu.Pin22=PB3 (JTDO/TRACESWO)

@@ -178,10 +178,9 @@ int main(void)
 			  break;
 		  case SYS_DUMP :
 		  case SYS_DUMP_AND_MEM_FULL:
-			  for (uint32_t i = 0; i <= 262144; i++) {
+			  for (uint32_t i = 0; i <= 262140; i++) {
 				  mem_read((i * 32), data_blk);
 				  CDC_Transmit_FS(data_blk, 32);
-				  HAL_Delay(1);
 				  if (usb_buffer[0] == 0xA5) {
 					  break;  //allow abort from dump
 				  }
