@@ -87,12 +87,13 @@ int main(void)
   GPIO_InitTypeDef accel_gpio = {0};
   accel_gpio.Pin = GPIO_PIN_1 | GPIO_PIN_6 | GPIO_PIN_7; //SPI1 SCLK, MISO, and MOSI
   accel_gpio.Mode = GPIO_MODE_AF_PP; //push-pull
-  accel_gpio.Speed = GPIO_SPEED_FREQ_MEDIUM; //5MHz to 25MHz per spec
+  accel_gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH; //5MHz to 25MHz per spec
   accel_gpio.Alternate = GPIO_AF5_SPI1; //SPI1 alternate function
 
   GPIO_InitTypeDef flash_gpio = {0};
   flash_gpio.Pin = GPIO_PIN_6 | GPIO_PIN_7; //QUADSPI IO3 and IO2
-  flash_gpio.Speed = GPIO_SPEED_FREQ_MEDIUM;
+  flash_gpio.Mode = GPIO_MODE_AF_PP;
+  flash_gpio.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   flash_gpio.Alternate = GPIO_AF10_QUADSPI;
 
   acc_chip_sel.port = GPIOC;
@@ -141,13 +142,10 @@ int main(void)
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
   HAL_GPIO_Init(GPIOA, &flash_gpio);
 
-
   uint8_t afe_sample[27] = {0};
   uint8_t data_blk[32] = {0};
   uint8_t acc_fifo_dump[504] = {0};
   uint32_t master_memory_addr = 0;
-
-
 
   /* USER CODE END 2 */
 
@@ -162,6 +160,7 @@ int main(void)
 		  case AFE_DRDY_AND_MEM_AVAIL :
 			  afe_rdata(afe_sample);
 			  mem_write(master_memory_addr, afe_sample, 27);
+			  CDC_Transmit_FS(afe_sample, 27);
 			  master_memory_addr += 27;
 			  sys_stat &= ~AFE_DRDY;
 			  break;
@@ -169,6 +168,7 @@ int main(void)
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &accel_gpio);
 			  fifo_data(acc_spi, acc_fifo_dump, 504);
+			  CDC_Transmit_FS(acc_fifo_dump, 504);
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &flash_gpio);
 			  master_memory_addr += 3; //insert 3 bytes of 0xFF
@@ -181,12 +181,19 @@ int main(void)
 			  for (uint32_t i = 0; i <= 262144; i++) {
 				  mem_read((i * 32), data_blk);
 				  CDC_Transmit_FS(data_blk, 32);
+				  HAL_Delay(1);
+				  if (usb_buffer[0] == 0xA5) {
+					  break;  //allow abort from dump
+				  }
 			  }
 			  sys_stat &= ~SYS_DUMP;
 			  break;
 		  case SYS_CLR :
 		  case SYS_CLR_AND_MEM_FULL :
+			  HAL_Delay(10); //give some time for other processes to finish
+			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 			  mem_chip_erase();
+			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 			  sys_stat &= ~SYS_CLR;
 			  sys_stat &= ~MEM_FULL;
 			  master_memory_addr = 0;
@@ -194,6 +201,7 @@ int main(void)
 		  default:
 			  if (master_memory_addr >= 0x7FFF00) {
 				  sys_stat |= MEM_FULL;
+				  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 			  }
 
 			  if (usb_buffer[0] == 0xAA) {
@@ -489,6 +497,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ADS_DRDY_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 

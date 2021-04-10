@@ -119,7 +119,7 @@ void mem_read(uint32_t addr, uint8_t* data_r) {
 	quad_read.AddressSize = QSPI_ADDRESS_24_BITS;
 	quad_read.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
 	quad_read.DataMode = QSPI_DATA_4_LINES;
-	quad_read.NbData = 1;
+	quad_read.NbData = 32;
 	quad_read.DummyCycles = 8;
 	quad_read.DdrMode = QSPI_DDR_MODE_DISABLE;
 	quad_read.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
@@ -148,10 +148,12 @@ void mem_read(uint32_t addr, uint8_t* data_r) {
  */
 uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 	uint8_t addr_LSB = addr & 0xFF;
-	uint16_t len_for_cur_page = (uint16_t) addr_LSB + (uint16_t) len;
-	if (len_for_cur_page > 256) {
-		len_for_cur_page = 256 - addr_LSB;
+	uint16_t temp_len = 0;
+	if (addr_LSB + len > 256) {  //if the given length would breach a page boundary
+		temp_len = len - (256 - addr_LSB); //we store the remaining length
+		len = 256 - addr_LSB; //and then for this instance we write up until the boundary
 	}
+
 	QSPI_CommandTypeDef write_enable = { 0 };
 	write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 	write_enable.Instruction = 0x06;
@@ -197,7 +199,7 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 	four_page_program.AddressSize = QSPI_ADDRESS_24_BITS;
 	four_page_program.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
 	four_page_program.DataMode = QSPI_DATA_4_LINES;
-	four_page_program.NbData = len_for_cur_page;
+	four_page_program.NbData = len;
 	four_page_program.DummyCycles = 0;
 	four_page_program.DdrMode = QSPI_DDR_MODE_DISABLE;
 	four_page_program.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
@@ -208,9 +210,7 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 	HAL_QSPI_Transmit(&hqspi, data_w, HAL_MAX_DELAY);
 
 	//update values
-	len -= len_for_cur_page;
-	addr += len_for_cur_page;
-	if (len == 0) {
+	if (!temp_len) {
 		return MEM_WRITE_SUCCESS;
 	} else {
 		QSPI_AutoPollingTypeDef RDSR_WIP;
@@ -223,8 +223,9 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 35) == HAL_ERROR) {
 			return MEM_ERASE_TIMEOUT;
 		} else {
-			data_w += len_for_cur_page;
-			mem_write(addr, data_w, len);
+			data_w += len;
+			addr += len;
+			mem_write(addr, data_w, temp_len);
 		}
 	}
 }

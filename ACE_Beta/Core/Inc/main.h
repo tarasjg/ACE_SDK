@@ -61,6 +61,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ACC_DRDY_Pin GPIO_PIN_0
 #define ACC_DRDY_GPIO_Port GPIOA
+#define ACC_DRDY_EXTI_IRQn EXTI0_IRQn
 #define ACC_CS_Pin GPIO_PIN_4
 #define ACC_CS_GPIO_Port GPIOC
 #define LED2_Pin GPIO_PIN_13
