@@ -33,13 +33,22 @@ void afe_init(void) {
 	afe_sdatac(); 	//enable reg writes
 	afe_write_reg(0x03, 0xE0);
 	HAL_Delay(10);
+	afe_write_ch(0b01100001);
+	HAL_GPIO_WritePin(ADS_START_GPIO_Port, ADS_START_Pin, GPIO_PIN_SET); //start conversion
+	afe_rdatac();
+	afe_sdatac();
+	afe_write_reg(0x02, 0xC0);
+	afe_write_ch(0b01100000);
 	afe_set_dr();	//set data rate 1000kSps
 	afe_set_srb();	//mux reference to CHn
 	afe_set_bias(); //enable internal reference, enable bias amp, mux CHp&n to bias inverting
-
-	afe_write_ch(0b01100000); //set gain of 24, enable normal electrode input
-	HAL_GPIO_WritePin(ADS_START_GPIO_Port, ADS_START_Pin, GPIO_PIN_SET); //start conversion
 	afe_rdatac();
+
+
+
+	//afe_write_ch(0b01100000); //set gain of 24, enable normal electrode input
+
+	//afe_rdatac();
 }
 
 void afe_sdatac(void) {
@@ -66,7 +75,7 @@ void afe_rdata(uint8_t* sample) {
 }
 
 void afe_set_dr(void) {
-	afe_write_reg(0x01, 0b10010100);
+	afe_write_reg(0x01, 0b10010101);
 }
 
 void afe_set_bias(void) {

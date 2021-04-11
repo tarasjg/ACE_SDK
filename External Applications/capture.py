@@ -9,7 +9,7 @@ dev_port = 0
 for port in ports:
     #if port.pid == 11111:
     print(port.name)
-    dev_port = "COM12" #port.name
+    dev_port = "COM16" #port.name
 
 if dev_port == 0:
     print("Device not found, exiting...")

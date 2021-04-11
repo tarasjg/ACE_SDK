@@ -160,7 +160,7 @@ int main(void)
 		  case AFE_DRDY_AND_MEM_AVAIL :
 			  afe_rdata(afe_sample);
 			  mem_write(master_memory_addr, afe_sample, 27);
-			  CDC_Transmit_FS(afe_sample, 27);
+			  //CDC_Transmit_FS(afe_sample, 27);
 			  master_memory_addr += 27;
 			  sys_stat &= ~AFE_DRDY;
 			  break;
@@ -168,7 +168,7 @@ int main(void)
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &accel_gpio);
 			  fifo_data(acc_spi, acc_fifo_dump, 504);
-			  CDC_Transmit_FS(acc_fifo_dump, 504);
+			  //CDC_Transmit_FS(acc_fifo_dump, 504);
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &flash_gpio);
 			  master_memory_addr += 3; //insert 3 bytes of 0xFF
@@ -189,7 +189,7 @@ int main(void)
 			  break;
 		  case SYS_CLR :
 		  case SYS_CLR_AND_MEM_FULL :
-			  HAL_Delay(10); //give some time for other processes to finish
+			  HAL_Delay(100); //give some time for other processes to finish
 			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 			  mem_chip_erase();
 			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
@@ -200,6 +200,8 @@ int main(void)
 		  default:
 			  if (master_memory_addr >= 0x7FFF00) {
 				  sys_stat |= MEM_FULL;
+				  sys_stat &= ~ACC_DRDY;
+				  sys_stat &= ~AFE_DRDY;
 				  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 			  }
 
