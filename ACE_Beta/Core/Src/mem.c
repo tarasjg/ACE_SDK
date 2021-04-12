@@ -154,6 +154,29 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 		len = 256 - addr_LSB; //and then for this instance we write up until the boundary
 	}
 
+	QSPI_CommandTypeDef read_status_register = { 0 };
+	read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
+	read_status_register.Instruction = 0x05;
+	read_status_register.AddressMode = QSPI_ADDRESS_NONE;
+	read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	read_status_register.DataMode = QSPI_DATA_1_LINE;
+	read_status_register.NbData = 1;
+	read_status_register.DummyCycles = 0;
+	read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
+	read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
+
+	QSPI_AutoPollingTypeDef RDSR_WIP;
+	RDSR_WIP.Match = 0x00;
+	RDSR_WIP.Mask = 0x01;
+	RDSR_WIP.Interval = 1;
+	RDSR_WIP.StatusBytesSize = 0x01;
+	RDSR_WIP.MatchMode = QSPI_MATCH_MODE_AND;
+	RDSR_WIP.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
+
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 100) == HAL_ERROR) {
+		return MEM_WRITE_TIMEOUT;
+	}
+
 	QSPI_CommandTypeDef write_enable = { 0 };
 	write_enable.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 	write_enable.Instruction = 0x06;
@@ -167,17 +190,6 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 
 	HAL_QSPI_Command(&hqspi, &write_enable, HAL_MAX_DELAY);
 
-	QSPI_CommandTypeDef read_status_register = { 0 };
-	read_status_register.InstructionMode = QSPI_INSTRUCTION_1_LINE;
-	read_status_register.Instruction = 0x05;
-	read_status_register.AddressMode = QSPI_ADDRESS_NONE;
-	read_status_register.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
-	read_status_register.DataMode = QSPI_DATA_1_LINE;
-	read_status_register.NbData = 1;
-	read_status_register.DummyCycles = 0;
-	read_status_register.DdrMode = QSPI_DDR_MODE_DISABLE;
-	read_status_register.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
-
 	QSPI_AutoPollingTypeDef RDSR_WEL;
 	RDSR_WEL.Match = 0x02;
 	RDSR_WEL.Mask = 0x02;
@@ -186,8 +198,7 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 	RDSR_WEL.MatchMode = QSPI_MATCH_MODE_AND;
 	RDSR_WEL.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
 
-	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 35)
-			== HAL_ERROR) {
+	if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WEL, 100) == HAL_ERROR) {
 		return MEM_WRITE_TIMEOUT;
 	}
 
@@ -209,19 +220,11 @@ uint8_t mem_write(uint32_t addr, uint8_t *data_w, uint16_t len) {
 
 	HAL_QSPI_Transmit(&hqspi, data_w, HAL_MAX_DELAY);
 
-	//update values
 	if (!temp_len) {
 		return MEM_WRITE_SUCCESS;
 	} else {
-		QSPI_AutoPollingTypeDef RDSR_WIP;
-		RDSR_WIP.Match = 0x00;
-		RDSR_WIP.Mask = 0x01;
-		RDSR_WIP.Interval = 5;
-		RDSR_WIP.StatusBytesSize = 0x01;
-		RDSR_WIP.MatchMode = QSPI_MATCH_MODE_AND;
-		RDSR_WIP.AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
-		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 35) == HAL_ERROR) {
-			return MEM_ERASE_TIMEOUT;
+		if (HAL_QSPI_AutoPolling(&hqspi, &read_status_register, &RDSR_WIP, 100) == HAL_ERROR) {
+			return MEM_WRITE_TIMEOUT;
 		} else {
 			data_w += len;
 			addr += len;

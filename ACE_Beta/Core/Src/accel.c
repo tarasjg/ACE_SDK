@@ -74,6 +74,8 @@ static void int1_init(SPI_Comm spi) {
 }
 
 void stream_start(SPI_Comm spi, int samples) {
+	reg_write(spi, 0x41, 0x52);
+	HAL_Delay(10);
 	reg_write(spi, ADXL372_POWER_CTL, 0x00); // set standby mode before changing settings
 	fifo_init(spi, samples);
 	int1_init(spi);

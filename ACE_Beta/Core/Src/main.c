@@ -134,17 +134,21 @@ int main(void)
   }
 
   afe_init();
-
+  uint8_t acc_fifo_dump[504] = {0};
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);  //reset the two shared GPIOs from the QUADSPI
   HAL_GPIO_Init(GPIOA, &accel_gpio);  //set them up for SPI
   MX_SPI1_Init();  //init SPI1
+  //uint8_t rx = 0;
+  //reg_read(acc_spi, 0x00, &rx, 1);
+
   stream_start(acc_spi, 504);
+  //fifo_data(acc_spi, acc_fifo_dump, 504);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
   HAL_GPIO_Init(GPIOA, &flash_gpio);
 
   uint8_t afe_sample[27] = {0};
   uint8_t data_blk[32] = {0};
-  uint8_t acc_fifo_dump[504] = {0};
+
   uint32_t master_memory_addr = 0;
 
   /* USER CODE END 2 */
@@ -158,9 +162,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  switch (sys_stat) {
 		  case AFE_DRDY_AND_MEM_AVAIL :
+		  case ACC_DRDY_AND_AFE_DRDY_AND_MEM_AVAIL:
 			  afe_rdata(afe_sample);
 			  mem_write(master_memory_addr, afe_sample, 27);
-			  //CDC_Transmit_FS(afe_sample, 27);
 			  master_memory_addr += 27;
 			  sys_stat &= ~AFE_DRDY;
 			  break;
@@ -168,12 +172,11 @@ int main(void)
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &accel_gpio);
 			  fifo_data(acc_spi, acc_fifo_dump, 504);
-			  //CDC_Transmit_FS(acc_fifo_dump, 504);
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &flash_gpio);
 			  master_memory_addr += 3; //insert 3 bytes of 0xFF
 			  mem_write(master_memory_addr, acc_fifo_dump, 504);
-			  master_memory_addr += 504;
+			  master_memory_addr += 507;
 			  sys_stat &= ~ACC_DRDY;
 			  break;
 		  case SYS_DUMP :
@@ -468,12 +471,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(ACC_DRDY_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ACC_CS_Pin ADS_PWDN_Pin */
-  GPIO_InitStruct.Pin = ACC_CS_Pin|ADS_PWDN_Pin;
+  /*Configure GPIO pin : ACC_CS_Pin */
+  GPIO_InitStruct.Pin = ACC_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(ACC_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LED2_Pin LED1_Pin ADS_CS_Pin ADS_START_Pin
                            ADS_RST_Pin */
@@ -483,6 +486,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ADS_PWDN_Pin */
+  GPIO_InitStruct.Pin = ADS_PWDN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ADS_PWDN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : APWR_EN_Pin */
   GPIO_InitStruct.Pin = APWR_EN_Pin;
@@ -498,7 +508,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ADS_DRDY_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);

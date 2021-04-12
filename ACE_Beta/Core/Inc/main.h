@@ -92,6 +92,7 @@ void Error_Handler(void);
 #define SYS_DUMP 0x02  //indicates that the system has received a magic word asking for a flash memory dump
 #define SYS_CLR  0x01  //indicates that the system has received a magic word asking to erase the flash
 
+#define ACC_DRDY_AND_AFE_DRDY_AND_MEM_AVAIL 0xC
 #define AFE_DRDY_AND_MEM_AVAIL 0x08
 #define ACC_DRDY_AND_MEM_AVAIL 0x04
 #define SYS_DUMP_AND_MEM_FULL  0xF2
