@@ -3,8 +3,10 @@ import statistics
 
 #Globals
 accel_data = list()
+accel_intrplt = list()
 numSamples = 0
 channels = [[] for i in range(8)]
+channelsV = [[] for i in range(8)]
 
 
 """compute the 2's complement of int value val"""
@@ -22,9 +24,11 @@ def parse_accel_data(fname):
         msb = True
         data = 0
         xyz = list()
+        count = 0
 
         for row in csv_reader:
             for elem in row:
+                count += 1
                 byte = int(elem)
 
                 # Each entry is ((MSB << 8) | LSB) >> 4 converted to g's
@@ -33,7 +37,7 @@ def parse_accel_data(fname):
                         data = byte << 8
                         msb = False
                     else:
-                        data = (data | byte) >> 4
+                        data = ((data | byte) >> 4) & 0xFFF
                         data = twos_comp(data, 12) * .1  # convert to g's
                         xyz.append(data)
                         msb = True
@@ -46,6 +50,14 @@ def parse_accel_data(fname):
                 if byte == 255 and prev1 == 255 and prev2 == 255:
                     in_accel_sect = not in_accel_sect
                     xyz = list()
+                    byte = -1
+                    prev1 = -1
+                    
+                    if count <= 10000:
+                        if (in_accel_sect):
+                            print(f'accel starts: {count}')
+                        else:
+                            print(f'accel ends: {count}')
 
                 # Detects start of front end
                 # if byte == 192 and prev1 == 0 and prev2 == 0:
@@ -84,7 +96,7 @@ def parse_eeg(fname):
     vref = 2.5
     gain = 24
     LSB = ((2 * vref)/ gain) / (2**24 - 1)
-    channelsV = [[] for i in range(8)]
+    # channelsV = [[] for i in range(8)]
 
     for ch in range(8):
         for i in range(numSamples):
@@ -103,11 +115,17 @@ def parse_eeg(fname):
             #do the math
             channelsV[ch].append(word*LSB)
 
-""" Interpolates """
+""" Interpolates accel data between front-end values, writes to csv """
 def write_to_file():
+
     with open('output.csv', mode='w') as outputFile:
         fh = csv.writer(outputFile, delimiter=',')
-        fh.writerow(['Time','CH1','CH2','CH3','CH4','CH5','CH6','CH7','CH8','X','Y','Z'])
+        fh.writerow(['Time', 'X', 'Y', 'Z'])
+        for i in range(len(accel_data)):
+            fh.writerow([i, accel_data[i][0], accel_data[i][1], accel_data[i][2]])
+
+        # for i in range(numSamples):
+            
 
 if __name__ == "__main__":
     print("Input file name: ")
@@ -115,11 +133,8 @@ if __name__ == "__main__":
     parse_accel_data(raw_data)
     parse_eeg(raw_data)
 
+    print(f'Size of channelsV: {len(channelsV[0])}')
     print(f'Size of channels: {len(channels[0])}')
     print(f'Size of accel: {len(accel_data)}')
-    # print(len(channels[0])/3)
-    # count = 0
-    # for i in accel_data:
-    #     count = count + 1
-    #     print(i)
-    # print(count)
+
+    write_to_file()
