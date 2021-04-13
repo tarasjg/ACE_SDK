@@ -42,14 +42,14 @@ def parse_accel_data(fname):
                         accel_data.append(xyz)
                         xyz = list()
                 
-                # Detects start of accel section
+                # Detects start/end of accel section
                 if byte == 255 and prev1 == 255 and prev2 == 255:
-                    in_accel_sect = True
+                    in_accel_sect = not in_accel_sect
                     xyz = list()
 
                 # Detects start of front end
-                if byte == 192 and prev1 == 0 and prev2 == 0:
-                    in_accel_sect = False
+                # if byte == 192 and prev1 == 0 and prev2 == 0:
+                #     in_accel_sect = False
                 
                 prev2 = prev1
                 prev1 = byte
@@ -58,10 +58,10 @@ def parse_accel_data(fname):
 def parse_eeg(fname):
     #init
     flag = False
-    count = 0
+    # count = 0
     idx = 0
     #Fill out the data for each channel, 8 channels, each channels gets 3 bytes of data for each read (24 total bits)
-    with open('dump.csv', 'r') as csv_file:
+    with open(fname, 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for data in csv_reader:
             for col in range(len(data)):
@@ -103,15 +103,23 @@ def parse_eeg(fname):
             #do the math
             channelsV[ch].append(word*LSB)
 
+""" Interpolates """
+def write_to_file():
+    with open('output.csv', mode='w') as outputFile:
+        fh = csv.writer(outputFile, delimiter=',')
+        fh.writerow(['Time','CH1','CH2','CH3','CH4','CH5','CH6','CH7','CH8','X','Y','Z'])
 
 if __name__ == "__main__":
     print("Input file name: ")
     raw_data = str(input())
     parse_accel_data(raw_data)
     parse_eeg(raw_data)
-    print(len(channels[0])/3)
-    count = 0
-    for i in accel_data:
-        count = count + 1
-        print(i)
-    print(count)
+
+    print(f'Size of channels: {len(channels[0])}')
+    print(f'Size of accel: {len(accel_data)}')
+    # print(len(channels[0])/3)
+    # count = 0
+    # for i in accel_data:
+    #     count = count + 1
+    #     print(i)
+    # print(count)
