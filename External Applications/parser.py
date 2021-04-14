@@ -47,17 +47,16 @@ def parse_accel_data(fname):
                         xyz = list()
                 
                 # Detects start/end of accel section
-                if byte == 255 and prev1 == 255 and prev2 == 255:
-                    in_accel_sect = not in_accel_sect
+                if prev2 == 0xAB and prev1 == 0xCD and byte == 0xEF:
+                    in_accel_sect = True
                     xyz = list()
                     byte = -1
                     prev1 = -1
                     
-                    if count <= 10000:
-                        if (in_accel_sect):
-                            print(f'accel starts: {count}')
-                        else:
-                            print(f'accel ends: {count}')
+                if prev2 == 0xFE and prev1 == 0xDC and byte == 0xBA:
+                    in_accel_sect = False
+                    byte = -1
+                    prev1 = -1
 
                 # Detects start of front end
                 # if byte == 192 and prev1 == 0 and prev2 == 0:
