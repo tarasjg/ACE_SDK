@@ -64,28 +64,36 @@ static void fifo_init(SPI_Comm spi, int samples) {
 	uint8_t samples_MSB = samples >> 8;
 	uint8_t samples_LSB = samples & 0xFF;
 	uint8_t payload_FIFO_CTL = samples_MSB | 0x02;
-	reg_write(spi, ADXL372_FIFO_CTL, payload_FIFO_CTL); //0b00000011 -> stream mode; sample MSB
-	reg_write(spi, ADXL372_FIFO_SAMPLES, samples_LSB); //0b1_00000000 -> 256 samples
+	reg_write(spi, ADXL372_FIFO_SAMPLES, 0b11111000); //0b1_00000000 -> 256 samples
+	reg_write(spi, ADXL372_FIFO_CTL, 0b00000011); //0b00000011 -> stream mode; sample MSB
 }
 
 static void int1_init(SPI_Comm spi) {
-
-	reg_write(spi, ADXL372_INT1_MAP, 0x04); //0b00000100 -> INT1 on FIFO Full Condition
+	reg_write(spi, ADXL372_INT1_MAP, 0b00000100); //0b00000100 -> INT1 on FIFO Full Condition
 }
 
 void stream_start(SPI_Comm spi, int samples) {
 	reg_write(spi, 0x41, 0x52);
-	HAL_Delay(10);
+	HAL_Delay(100);
 	reg_write(spi, ADXL372_POWER_CTL, 0x00); // set standby mode before changing settings
+	reg_write(spi, 0x3D, 0x00);
+	reg_write(spi, 0x3E, 0b00000100);
 	fifo_init(spi, samples);
 	int1_init(spi);
-
-	reg_write(spi, ADXL372_POWER_CTL, 0x03); //full bandwidth mode; HPF/LPF enabled
-	//reg_write(spi, ADXL372_POWER_CTL, 0x22); //instant on mode; high threshold
+	uint8_t r = {0};
+	reg_read(spi, 0x3D, &r, 1);
+	reg_read(spi, 0x3E, &r, 1);
+	reg_write(spi, ADXL372_POWER_CTL, 0b00001111); //full bandwidth mode; HPF/LPF enabled
+	HAL_Delay(370);
 }
 
 void fifo_data(SPI_Comm spi, uint8_t* data, size_t data_size) {
 	uint8_t dummy = 0;
+	uint8_t fifo_entries_msb = 0;
+	uint8_t fifo_entries_lsb = 0;
+	reg_read(spi, 0x06, &fifo_entries_msb, 1);
+	reg_read(spi, 0x07, &fifo_entries_lsb, 1);
+	uint16_t valid = fifo_entries_msb << 8 | fifo_entries_lsb;
 	reg_read(spi, ADXL372_FIFO_DATA, data, data_size);
 	reg_read(spi, ADXL372_STATUS_1, &dummy, sizeof(dummy));
 }

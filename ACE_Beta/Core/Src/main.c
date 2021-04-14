@@ -134,20 +134,20 @@ int main(void)
   }
 
   afe_init();
-  uint8_t acc_fifo_dump[504] = {0};
+  uint8_t acc_fifo_dump[1008] = {0};
+  HAL_Delay(1);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);  //reset the two shared GPIOs from the QUADSPI
   HAL_GPIO_Init(GPIOA, &accel_gpio);  //set them up for SPI
   MX_SPI1_Init();  //init SPI1
-  //uint8_t rx = 0;
-  //reg_read(acc_spi, 0x00, &rx, 1);
-
-  stream_start(acc_spi, 504);
-  //fifo_data(acc_spi, acc_fifo_dump, 504);
+  stream_start(acc_spi, 1008);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
   HAL_GPIO_Init(GPIOA, &flash_gpio);
 
   uint8_t afe_sample[27] = {0};
   uint8_t data_blk[32] = {0};
+
+  uint8_t acc_s[3] = {0xAB, 0xCD, 0xEF};
+  uint8_t acc_e[3] = {0xFE, 0xDC, 0xBA};
 
   uint32_t master_memory_addr = 0;
 
@@ -169,14 +169,17 @@ int main(void)
 			  sys_stat &= ~AFE_DRDY;
 			  break;
 		  case ACC_DRDY_AND_MEM_AVAIL :
-			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
+			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1 | GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &accel_gpio);
-			  fifo_data(acc_spi, acc_fifo_dump, 504);
-			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
+			  fifo_data(acc_spi, acc_fifo_dump, 1008);
+			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1 | GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &flash_gpio);
+			  mem_write(master_memory_addr, acc_s, 3);
 			  master_memory_addr += 3; //insert 3 bytes of 0xFF
-			  mem_write(master_memory_addr, acc_fifo_dump, 504);
-			  master_memory_addr += 507;
+			  mem_write(master_memory_addr, acc_fifo_dump, 1008);
+			  master_memory_addr += 1008;
+			  mem_write(master_memory_addr, acc_e, 3);
+			  master_memory_addr += 3;
 			  sys_stat &= ~ACC_DRDY;
 			  break;
 		  case SYS_DUMP :
@@ -201,21 +204,29 @@ int main(void)
 			  master_memory_addr = 0;
 			  break;
 		  default:
-			  if (master_memory_addr >= 0x7FFF00) {
-				  sys_stat |= MEM_FULL;
-				  sys_stat &= ~ACC_DRDY;
-				  sys_stat &= ~AFE_DRDY;
-				  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+			  if (GPIOA->IDR & 0x1) {
+				  sys_stat |= ACC_DRDY;  //because during a dump she'll come high and not flip the flag
 			  }
 
 			  if (usb_buffer[0] == 0xAA) {
 				  sys_stat |= SYS_DUMP;
+				  sys_stat &= ~ACC_DRDY;
+				  sys_stat &= ~AFE_DRDY;
 				  usb_buffer[0] = 0;
 			  }
 
 			  if (usb_buffer[0] == 0xA5) {
 				  sys_stat |= SYS_CLR;
+				  sys_stat &= ~ACC_DRDY;
+				  sys_stat &= ~AFE_DRDY;
 				  usb_buffer[0] = 0;
+			  }
+
+			  if (master_memory_addr >= 0x7FFF00) {
+				  sys_stat |= MEM_FULL;
+				  sys_stat &= ~ACC_DRDY;
+				  sys_stat &= ~AFE_DRDY;
+				  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 			  }
 	  }
   }
@@ -535,7 +546,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
