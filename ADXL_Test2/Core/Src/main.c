@@ -70,7 +70,7 @@ volatile uint8_t fifo_read_flag = 0;
 
 GPIO_Pin chip_select;
 SPI_Comm accel_spi;
-uint8_t fifo_buffer[FIFO_SAMPLES];
+uint8_t fifo_buffer[FIFO_BYTES];
 size_t fifo_buffer_size;
 
 /* USER CODE END 0 */
@@ -130,13 +130,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  /*
+
 	  if (fifo_read_flag) {
+		  fifo_read_flag = 0;
+	  	  fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
+	  	  HAL_UART_Transmit(&huart1, fifo_buffer, fifo_buffer_size, HAL_MAX_DELAY);
 		  // buffer ready to transmit
-		HAL_UART_Transmit(&huart1, fifo_buffer, fifo_buffer_size, HAL_MAX_DELAY);
-		reg_read_CS(accel_spi, ADXL372_STATUS_1, &dummy, sizeof(dummy));
 	  }
-	  */
+
 	  //reg_read(accel_spi, (uint8_t) ADXL372_FIFO_DATA, (uint8_t*) &fifo_buffer);
   }
   /* USER CODE END 3 */
@@ -407,9 +408,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	reg_read(accel_spi, ADXL372_FIFO_ENTRIES_1, &dummy, sizeof(dummy));
 	*/
 	if(GPIO_Pin == GPIO_PIN_0) {
-		fifo_read_flag = 0;
+		fifo_read_flag = 1;
 		//fifo_data(accel_spi, fifo_buffer, fifo_buffer_size);
-		reg_read_IT(accel_spi, ADXL372_FIFO_DATA, fifo_buffer, fifo_buffer_size);
 	}
 
 }

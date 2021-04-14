@@ -75,9 +75,10 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 
 #define FIFO_SAMPLES 504
+#define FIFO_BYTES 1008
 
 extern SPI_Comm accel_spi;
-extern uint8_t fifo_buffer[FIFO_SAMPLES];
+extern uint8_t fifo_buffer[FIFO_BYTES];
 extern size_t fifo_buffer_size;
 
 /* USER CODE END Private defines */

@@ -45,10 +45,6 @@
 /* USER CODE BEGIN PV */
 
 
-extern SPI_Comm accel_spi;
-extern uint8_t fifo_buffer[FIFO_SAMPLES];
-extern size_t fifo_buffer_size;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
