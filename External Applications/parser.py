@@ -117,7 +117,7 @@ def write_to_file():
     numSamples = int(len(channels[0])/3)
     accel_fe_ratio = len(accel_data) / numSamples
 
-    with open('output.csv', mode='w') as outputFile:
+    with open('output.csv', mode='w', newline='') as outputFile:
         fh = csv.writer(outputFile, delimiter=',')
         fh.writerow(['Time', 'CH1','CH2','CH3','CH4','CH5','CH6','CH7','CH8','X', 'Y', 'Z'])
 
