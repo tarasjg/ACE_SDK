@@ -22,7 +22,7 @@ with open('output.csv') as csv_file:
         #Ignore the headers if there are headers
         if lineCount == 0:
             lineCount += 1
-        elif(lineCount % 2 == 1):
+        elif(lineCount != 0):
             #Fill out the vectors
                 time.append(float(row[0]))
                 ch1.append(float(row[1]))
@@ -37,7 +37,6 @@ with open('output.csv') as csv_file:
                 y.append(float(row[10]))
                 z.append(float(row[11]))
         lineCount += 1
-
 
 #Plotting Channels
 plot1, axs = plt.subplots(8,1)
@@ -101,7 +100,6 @@ axs2[2].set(xlabel = 'Timestamp', ylabel = 'Z')
 plot1.tight_layout()
 plot2.tight_layout()
 
-plot1.tight_layout()
 plt.show()
 
 '''

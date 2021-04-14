@@ -3,8 +3,6 @@ import statistics
 
 #Globals
 accel_data = list()
-accel_intrplt = list()
-numSamples = 0
 channels = [[] for i in range(8)]
 channelsV = [[] for i in range(8)]
 
@@ -116,15 +114,20 @@ def parse_eeg(fname):
 
 """ Interpolates accel data between front-end values, writes to csv """
 def write_to_file():
+    numSamples = int(len(channels[0])/3)
+    accel_fe_ratio = len(accel_data) / numSamples
 
     with open('output.csv', mode='w') as outputFile:
         fh = csv.writer(outputFile, delimiter=',')
-        fh.writerow(['Time', 'X', 'Y', 'Z'])
-        for i in range(len(accel_data)):
-            fh.writerow([i, accel_data[i][0], accel_data[i][1], accel_data[i][2]])
+        fh.writerow(['Time', 'CH1','CH2','CH3','CH4','CH5','CH6','CH7','CH8','X', 'Y', 'Z'])
 
-        # for i in range(numSamples):
-            
+        interp_ind = 0
+        for j in range(numSamples):
+            i = int(interp_ind)
+            fh.writerow([j, channelsV[0][j], channelsV[1][j], channelsV[2][j], \
+                channelsV[3][j], channelsV[4][j], channelsV[5][j], channelsV[6][j], \
+                channelsV[7][j], accel_data[i][0], accel_data[i][1], accel_data[i][2]])
+            interp_ind += accel_fe_ratio
 
 if __name__ == "__main__":
     print("Input file name: ")
