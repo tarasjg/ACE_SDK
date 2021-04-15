@@ -52,6 +52,7 @@ def parse_accel_data(fname):
                 if prev2 == 0xAB and prev1 == 0xCD and byte == 0xEF and not in_accel_sect:
                     in_accel_sect = True
                     xyz = list()
+                    msb = True
                     byte = -1
                     prev1 = -1
                     
