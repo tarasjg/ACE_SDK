@@ -31,28 +31,35 @@ def parse_accel_data(fname):
 
                 # Each entry is ((MSB << 8) | LSB) >> 4 converted to g's
                 if in_accel_sect:
+
                     if msb:
                         data = byte << 8
                         msb = False
                     else:
+                        msb = True
                         data = ((data | byte) >> 4) & 0xFFF
                         data = twos_comp(data, 12) * .1  # convert to g's
+                        if abs(data) > 10:
+                            print(data)
+                            print(row[count-10:count+10])
                         xyz.append(data)
-                        msb = True
 
                     if len(xyz) == 3:
                         accel_data.append(xyz)
                         xyz = list()
                 
                 # Detects start/end of accel section
-                if prev2 == 0xAB and prev1 == 0xCD and byte == 0xEF:
+                if prev2 == 0xAB and prev1 == 0xCD and byte == 0xEF and not in_accel_sect:
                     in_accel_sect = True
                     xyz = list()
                     byte = -1
                     prev1 = -1
                     
-                if prev2 == 0xFE and prev1 == 0xDC and byte == 0xBA:
+                if prev2 == 0xFE and prev1 == 0xDC and byte == 0xBA and in_accel_sect:
                     in_accel_sect = False
+                    if not msb:
+                        print(row[count - 10:count + 10])
+                    msb = True
                     byte = -1
                     prev1 = -1
 

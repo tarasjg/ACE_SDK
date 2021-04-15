@@ -134,10 +134,10 @@ int main(void)
   }
 
   afe_init();
-  uint8_t acc_fifo_dump[1008] = {0};
+  uint8_t acc_fifo_dump[1014] = {0};
   HAL_Delay(1);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);  //reset the two shared GPIOs from the QUADSPI
-  HAL_GPIO_Init(GPIOA, &accel_gpio);  //set them up for SPI
+  //HAL_GPIO_Init(GPIOA, &accel_gpio);  //set them up for SPI
   MX_SPI1_Init();  //init SPI1
   stream_start(acc_spi, 1008);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6 | GPIO_PIN_7);
@@ -171,13 +171,14 @@ int main(void)
 		  case ACC_DRDY_AND_MEM_AVAIL :
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1 | GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &accel_gpio);
-			  fifo_data(acc_spi, acc_fifo_dump, 1008);
+			  fifo_data(acc_spi, acc_fifo_dump, 1014);
 			  HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1 | GPIO_PIN_6 | GPIO_PIN_7);
 			  HAL_GPIO_Init(GPIOA, &flash_gpio);
+			  MX_QUADSPI_Init();
 			  mem_write(master_memory_addr, acc_s, 3);
-			  master_memory_addr += 3; //insert 3 bytes of 0xFF
-			  mem_write(master_memory_addr, acc_fifo_dump, 1008);
-			  master_memory_addr += 1008;
+			  master_memory_addr += 3;
+			  mem_write(master_memory_addr, acc_fifo_dump, 1014);
+			  master_memory_addr += 1014;
 			  mem_write(master_memory_addr, acc_e, 3);
 			  master_memory_addr += 3;
 			  sys_stat &= ~ACC_DRDY;

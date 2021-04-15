@@ -64,7 +64,7 @@ static void fifo_init(SPI_Comm spi, int samples) {
 	uint8_t samples_MSB = samples >> 8;
 	uint8_t samples_LSB = samples & 0xFF;
 	uint8_t payload_FIFO_CTL = samples_MSB | 0x02;
-	reg_write(spi, ADXL372_FIFO_SAMPLES, 0b11111000); //0b1_00000000 -> 256 samples
+	reg_write(spi, ADXL372_FIFO_SAMPLES, 0b11111011); //0b1_00000000 -> 256 samples
 	reg_write(spi, ADXL372_FIFO_CTL, 0b00000011); //0b00000011 -> stream mode; sample MSB
 }
 
@@ -94,8 +94,13 @@ void fifo_data(SPI_Comm spi, uint8_t* data, size_t data_size) {
 	reg_read(spi, 0x06, &fifo_entries_msb, 1);
 	reg_read(spi, 0x07, &fifo_entries_lsb, 1);
 	uint16_t valid = fifo_entries_msb << 8 | fifo_entries_lsb;
-	reg_read(spi, ADXL372_FIFO_DATA, data, data_size);
-	reg_read(spi, ADXL372_STATUS_1, &dummy, sizeof(dummy));
+	if (valid >= 507) {
+		reg_read(spi, ADXL372_FIFO_DATA, data, data_size);
+		reg_read(spi, ADXL372_STATUS_1, &dummy, sizeof dummy);
+	} else {
+		reg_read(spi, ADXL372_FIFO_DATA, &dummy, sizeof dummy);
+		reg_read(spi, ADXL372_STATUS_1, &dummy, sizeof dummy);
+	}
 }
 
 
